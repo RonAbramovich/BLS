@@ -109,11 +109,39 @@ namespace BLS.Fields.Implementations
 
             return new PrimeFieldElement(Field, (int)result);
         }
-        public bool Equals(PrimeFieldElement other)
+        public override bool Equals(object other)
         {
-            return other != null && other.Field.Characteristic == Field.Characteristic && other.Value == Value;
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+            if (other == null || GetType() != other.GetType())
+            {
+                return false;
+            }
+            var otherElement = (PrimeFieldElement)other;
+            return Field.Characteristic == otherElement.Field.Characteristic && Value == otherElement.Value;
         }
 
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Field.Characteristic, Value);
+        }
+
+        #region Operator-Overloads
+        public static PrimeFieldElement operator +(PrimeFieldElement a, PrimeFieldElement b) => a.Add(b);
+        public static PrimeFieldElement operator -(PrimeFieldElement a, PrimeFieldElement b) => a.Sub(b);
+        public static PrimeFieldElement operator *(PrimeFieldElement a, PrimeFieldElement b) => a.Multiply(b);
+        public static PrimeFieldElement operator -(PrimeFieldElement a) => a.AdditiveInverse();
+        public static PrimeFieldElement operator /(PrimeFieldElement a, PrimeFieldElement b) => a.Multiply(b.MultiplicativeInverse());
+
+        public static bool operator ==(PrimeFieldElement a, PrimeFieldElement b) =>
+            ReferenceEquals(a, b) || (a is not null && a.Equals(b));
+
+        public static bool operator !=(PrimeFieldElement a, PrimeFieldElement b) => !(a == b);
+        #endregion
+
+        #region privateHelpers
         private void EnsureSameField(PrimeFieldElement other)
         {
             ArgumentNullException.ThrowIfNull(other);
@@ -134,5 +162,7 @@ namespace BLS.Fields.Implementations
 
             return (int)reminder;
         }
+
+        #endregion
     }
 }

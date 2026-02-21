@@ -13,9 +13,7 @@ namespace BLS.Fields.Interfaces
         // Canonical elements
         TElement Zero { get; }
         TElement One { get; }
-
         TElement FromInt(long value);
-
         bool IsValid(TElement x);
     }
 }

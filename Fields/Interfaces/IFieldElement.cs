@@ -1,4 +1,6 @@
-﻿namespace BLS.Fields.Interfaces
+﻿using System.Numerics;
+
+namespace BLS.Fields.Interfaces
 {
     public interface IFieldElement<TSelf> where TSelf : IFieldElement<TSelf> // TSelf is concrete type - for avoiding boxing and enabling static dispatch
     {
@@ -8,8 +10,11 @@
         TSelf AdditiveInverse();
         TSelf MultiplicativeInverse();                // multiplicative inverse (error if zero)
         TSelf Power(long exponent);
-
         bool IsZero { get; }
-        bool Equals(TSelf other);
+        static abstract TSelf operator -(TSelf a);
+        static abstract TSelf operator +(TSelf a, TSelf b);
+        static abstract TSelf operator -(TSelf a, TSelf b);
+        static abstract TSelf operator *(TSelf a, TSelf b);
+        static abstract TSelf operator /(TSelf a, TSelf b);
     }
 }
