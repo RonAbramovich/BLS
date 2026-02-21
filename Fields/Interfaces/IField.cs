@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 
-namespace BLS.Fields
+namespace BLS.Fields.Interfaces
 {
     public interface IField<TElement> where TElement : IFieldElement<TElement>
     {

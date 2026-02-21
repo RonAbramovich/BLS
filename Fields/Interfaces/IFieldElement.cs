@@ -1,4 +1,4 @@
-﻿namespace BLS.Fields
+﻿namespace BLS.Fields.Interfaces
 {
     public interface IFieldElement<TSelf> where TSelf : IFieldElement<TSelf> // TSelf is concrete type - for avoiding boxing and enabling static dispatch
     {
