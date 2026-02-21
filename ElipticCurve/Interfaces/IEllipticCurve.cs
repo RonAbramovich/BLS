@@ -1,6 +1,7 @@
 ﻿using BLS.Fields.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Numerics;
 using System.Text;
 
@@ -13,10 +14,12 @@ namespace BLS.ElipticCurve.Interfaces
         T B { get; }
 
         BigInteger GroupOrder { get; }
-
-        // The prime factorization of the group order, used for efficient order computations.
+        [Description("The prime factorization of the group order, used for efficient order computations.")]
         IReadOnlyList<(BigInteger Prime, int Power)> GroupOrderFactors { get; }
+        [Description("The largest prime dividing the group order (r).")]
+        BigInteger R { get; }
         IECPoint<T> Infinity { get; }
+
         bool IsOnCurve(IECPoint<T> p);
         IECPoint<T> CreatePoint(T x, T y);
     }

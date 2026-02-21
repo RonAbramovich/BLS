@@ -12,6 +12,7 @@ namespace BLS.ElipticCurve.Implementations
         private BigInteger? _groupOrder;
         private List<(BigInteger Prime, int Power)>? _factors;
         private IECPoint<T>? _infinity;
+        private BigInteger? _largestPrimeDivisor;
 
         public IField<T> Field { get; }
 
@@ -87,6 +88,33 @@ namespace BLS.ElipticCurve.Implementations
                 }
                 _ = GroupOrder;
                 return _factors ?? new List<(BigInteger, int)>();
+            }
+        }
+
+        /// <summary>
+        /// The largest prime divisor of the group order
+        /// </summary>
+        public BigInteger R
+        {
+            get
+            {
+                if (_largestPrimeDivisor.HasValue) return _largestPrimeDivisor.Value;
+
+                var factors = GroupOrderFactors;
+                if (factors == null || factors.Count == 0)
+                {
+                    _largestPrimeDivisor = 1;
+                    return _largestPrimeDivisor.Value;
+                }
+
+                BigInteger maxPrime = 1;
+                foreach (var f in factors)
+                {
+                    if (f.Prime > maxPrime) maxPrime = f.Prime;
+                }
+
+                _largestPrimeDivisor = maxPrime;
+                return _largestPrimeDivisor.Value;
             }
         }
 
