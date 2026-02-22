@@ -2,7 +2,6 @@ using System.Numerics;
 using Xunit;
 using BLS.Fields.Implementations;
 using BLS.ElipticCurve.Implementations;
-using BLS.ElipticCurve.Interfaces;
 
 namespace BLS.Tests
 {
