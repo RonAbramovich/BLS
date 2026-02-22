@@ -24,6 +24,7 @@ namespace BLS.ElipticCurve.Implementations
             Field = field ?? throw new ArgumentNullException(nameof(field));
             A = a ?? throw new ArgumentNullException(nameof(a));
             B = b ?? throw new ArgumentNullException(nameof(b));
+            ValidateSmoothCurve();
         }
 
         public BigInteger GroupOrder
@@ -194,6 +195,21 @@ namespace BLS.ElipticCurve.Implementations
             }
 
             return factors;
+        }
+        private void ValidateSmoothCurve()
+        {
+            // Validate that the curve is smooth (non-singular).
+            // For short Weierstrass form y^2 = x^3 + A*x + B over a field,
+            // the curve is non-singular iff 4*A^3 + 27*B^2 != 0 in the field.
+            var four = Field.FromInt(4);
+            var twentySeven = Field.FromInt(27);
+            var aCubed = A.Power(3);
+            var bSquared = B.Power(2);
+            var discriminantTerm = four * aCubed + twentySeven * bSquared;
+            if (discriminantTerm.IsZero)
+            {
+                throw new ArgumentException("The curve is singular (not smooth): 4*A^3 + 27*B^2 == 0 over the field.", nameof(A));
+            }
         }
     }
 }
