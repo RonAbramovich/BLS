@@ -11,80 +11,71 @@ namespace BLS.Fields.Implementations
     /// </summary>
     public static class IrreduciblePolynomialFinder
     {
-        /// <summary>
-        /// Find the smallest embedding degree k such that r | (p^k - 1) and then search for a monic irreducible polynomial of degree k.
-        /// Returns the polynomial if found; throws InvalidOperationException if no polynomial is found within the search limits.
-        /// </summary>
-        public static Polynomial FindIrreduciblePolynomial(PrimeField field, BigInteger r, int maxDegreeSearch = 50)
+        public static Polynomial FindIrreduciblePolynomial(PrimeField field, BigInteger order, int maxDegreeSearch = 50)
+        {
+            ValidateFieldAndOrder(field, order);
+            int characteristic = field.Characteristic;
+            int degree = FindEmbeddingDegree(order, maxDegreeSearch, characteristic);
+            int maxAttempts = ValidateMaxAttemptsRange(characteristic, degree);
+            var distinctPrimeFactors = GetPrimeDivisors(degree);
+            var characteristicToDegree = BigInteger.Pow(new BigInteger(characteristic), degree);
+            var x = Polynomial.X(characteristic);
+
+            for (int candidateValue = 0; candidateValue < maxAttempts; candidateValue++)
+            {
+                var coefficients = new int[degree + 1];
+                int remainder = candidateValue;
+                for (int i = 0; i < degree; i++)
+                {
+                    coefficients[i] = remainder % characteristic;
+                    remainder /= characteristic;
+                }
+                coefficients[degree] = 1; // Ensure monic polynomial
+
+                var candidatePoly = new Polynomial(characteristic, coefficients);
+
+                // (1) Check if candidatePoly divides x^{p^d} - x
+                var xPowerPd = Polynomial.PowMod(x, characteristicToDegree, candidatePoly);
+                if (!Polynomial.Sub(xPowerPd, x).IsZero) continue;
+
+                bool isIrreducible = true;
+                foreach (var q in distinctPrimeFactors)
+                {
+                    int subDegree = degree / q;
+                    var characteristicToSubDegree = BigInteger.Pow(new BigInteger(characteristic), subDegree);
+
+                    var xPowerSubDegree = Polynomial.PowMod(x, characteristicToSubDegree, candidatePoly);
+                    var commonFactorTerm = Polynomial.Sub(xPowerSubDegree, x);
+
+                    // If gcd(candidatePoly, x^{p^{d/q}} - x) != 1, it has a factor in a subfield
+                    if (commonFactorTerm.IsZero) { isIrreducible = false; break; }
+
+                    var gcd = Polynomial.Gcd(candidatePoly, commonFactorTerm);
+                    if (!IsUnity(gcd)) { isIrreducible = false; break; }
+                }
+
+                if (isIrreducible) return candidatePoly;
+            }
+
+            throw new InvalidOperationException(
+                $"No irreducible polynomial of degree {degree} found over F_{characteristic}.");
+        }
+
+        private static int ValidateMaxAttemptsRange(int characteristic, int degree)
+        {
+            // Enumeration limit check
+            BigInteger totalCandidates = BigInteger.Pow(new BigInteger(characteristic), degree);
+            if (totalCandidates > new BigInteger(int.MaxValue))
+                throw new InvalidOperationException($"Search space too large: p^d = {totalCandidates}");
+
+            int maxAttempts = (int)totalCandidates;
+            return maxAttempts;
+        }
+
+        private static void ValidateFieldAndOrder(PrimeField field, BigInteger order)
         {
             if (field == null) throw new ArgumentNullException(nameof(field));
-            if (r <= 1) throw new ArgumentException("r must be a prime or integer > 1", nameof(r));
-
-            int p = field.Characteristic;
-            int k = FindEmbeddingDegree(r, maxDegreeSearch, p);
-
-            // prepare monic polynomial enumeration of degree k
-            // there are p^k candidates for coefficients of x^{0..k-1}
-            BigInteger total = BigInteger.Pow(new BigInteger(p), k);
-            if (total > new BigInteger(int.MaxValue))
-            {
-                // avoid huge enumeration
-                throw new InvalidOperationException($"Too many candidate polynomials to enumerate: p^{k} = {total}");
-            }
-
-            int candidates = (int)total;
-
-            // prime divisors of k for Rabin's test
-            var primeDivs = GetPrimeDivisors(k);
-
-            var xPoly = Polynomial.X(p);
-            var pkExp = BigInteger.Pow(new BigInteger(p), k);
-
-            for (int idx = 0; idx < candidates; idx++)
-            {
-                // coefficients for degrees 0..k-1 in base-p representation of idx
-                var coeffs = new int[k + 1]; // degree k polynomial: coeffs[0..k-1] are digits, coeffs[k]=1 (monic)
-                int tmp = idx;
-                for (int i = 0; i < k; i++)
-                {
-                    coeffs[i] = tmp % p;
-                    tmp /= p;
-                }
-                coeffs[k] = 1; // leading coeff
-                var g = new Polynomial(p, coeffs);
-
-                // Rabin test
-                // 1) g divides x^{p^k} - x  <=> x^{p^k} mod g == x mod g
-                var xpk = Polynomial.PowMod(xPoly, pkExp, g);
-                var diff = Polynomial.Sub(xpk, xPoly);
-                if (!diff.IsZero) continue; // fails first condition
-
-                bool ok = true;
-                foreach (var d in primeDivs)
-                {
-                    int kd = k / d;
-                    var exp = BigInteger.Pow(new BigInteger(p), kd);
-                    var xp = Polynomial.PowMod(xPoly, exp, g);
-                    var gcd = Polynomial.Gcd(g, Polynomial.Sub(xp, xPoly));
-                    if (!gcd.IsZero && gcd.Degree >= 0)
-                    {
-                        // if gcd != 1 then reducible
-                        if (!(gcd.Degree == 0 && gcd[0] == 1))
-                        {
-                            ok = false;
-                            break;
-                        }
-                    }
-                }
-
-                if (ok)
-                {
-                    // found irreducible polynomial
-                    return g;
-                }
-            }
-
-            throw new InvalidOperationException($"No irreducible polynomial of degree {k} found over F_{p} after enumerating {candidates} candidates.");
+            if (order <= 1) throw new ArgumentException("Order must be > 1", nameof(order));
         }
 
         private static int FindEmbeddingDegree(BigInteger r, int maxDegreeSearch, int p)
@@ -93,8 +84,8 @@ namespace BLS.Fields.Implementations
             int k = -1;
             for (int cand = 1; cand <= maxDegreeSearch; cand++)
             {
-                var pk = BigInteger.Pow(new BigInteger(p), cand);
-                if ((pk - 1) % r == 0)
+                var p_pow_k = BigInteger.Pow(new BigInteger(p), cand);
+                if ((p_pow_k - 1) % r == 0)
                 {
                     k = cand;
                     break;
@@ -118,6 +109,11 @@ namespace BLS.Fields.Implementations
             }
             if (t > 1) res.Add(t);
             return res;
+        }
+
+        private static bool IsUnity(Polynomial poly)
+        {
+            return poly != null && !poly.IsZero && poly.Degree == 0 && poly[0] == 1;
         }
     }
 }

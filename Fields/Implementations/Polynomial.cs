@@ -164,6 +164,7 @@ namespace BLS.Fields.Implementations
             return DivRem(a, modulus).Remainder;
         }
 
+        // Fast exponentiation mod a polynomial: Ron TODO : Improve.
         public static Polynomial PowMod(Polynomial value, BigInteger exponent, Polynomial mod)
         {
             if (value.Modulus != mod.Modulus) throw new ArgumentException("Modulus mismatch");
