@@ -1,17 +1,23 @@
-# Elliptic Curve Calculations (Executable notes for tests)
+﻿# Elliptic Curve Calculations - Reference Example
 
-This document contains the full modular arithmetic and elliptic curve calculations used by the unit tests in `Tests/EllipticCurveTests.cs`. 
-It documents the PrimeField computations and the EC computations for the example curve over F5 (A = 0, B = 2).
+> **Note**: This document is a legacy reference file. For comprehensive algorithm documentation, see:
+> - [Field Arithmetic](01_field_arithmetic.md)
+> - [Elliptic Curves](02_elliptic_curves.md)
+> - [Test Suite](06_test_suite.md)
+
+This document contains the detailed step-by-step calculations for the primary test case used in `Tests/EllipticCurveTests.cs`.
 
 ---
 
-Field: F5 (p = 5)
+## Test Curve: y^2 = x^3 + 2 over F_5
 
-Curve 
+**Field**: F_5 (p = 5)  
+**Curve Parameters**: A = 0, B = 2
+
+The Weierstrass equation becomes:
 ```
-y^2 = x^3 + A*x + B
+y^2 = x^3 + 2
 ```
-With A = 0, B = 2 this becomes `y^2 = x^3 + 2` over F5.
 
 ### Squares in F5 (quadratic residues)
 Compute squares modulo 5:
