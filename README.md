@@ -1,4 +1,4 @@
-# BLS Digital Signature Implementation
+﻿# BLS Digital Signature Implementation
 
 This project implements the **BLS** cryptographic signature scheme using the Reduced Tate Pairing.
 BLS signatures are a form of digital signature that supports signature aggregation, making them useful for blockchain applications and distributed systems.
@@ -47,8 +47,8 @@ The project defines clean abstractions for algebraic structures:
 #### Elliptic Curve Implementations
 
 1. **`EllipticCurve<T>`**
-   - Implements elliptic curves E: y² = x³ + Ax + B over any field
-   - Validates curve is non-singular: 4A³ + 27B² ≠ 0
+   - Implements elliptic curves E: y^2 = x^3 + Ax + B over any field
+   - Validates curve is non-singular: 4A^3 + 27B^2 ≠ 0
    - Computes group order |E(F_p)| using direct counting with Euler's criterion
    - Factorizes group order to find the largest prime divisor r
 
@@ -92,7 +92,7 @@ The BLS signature scheme consists of the following steps:
 Input : [message m, Eliptic curve prameter A,B \in F_p, private key a, public key P = aG]
 
 ### 1. **Setup**
-   - Define elliptic curve E: y² = x³ + Ax + B over F_p
+   - Define elliptic curve E: y^2 = x^3 + Ax + B over F_p
    - Compute group order |E(F_p)| and find largest prime divisor r
    - Find embedding degree k and irreducible polynomial g(x) of degree k over F_p
    - Construct extension field F_p^k
@@ -130,9 +130,9 @@ Elements are represented as polynomials (coefficient vectors) in the quotient ri
 ### Option B: Matrix Representation (Not Chosen)
 This approach embeds the multiplicative group of F_p^k into GL_k(F_p) (k×k matrices over F_p):
 - Start with the root α = π(x) where π: F_p[x] → F_p[x]/(g(x))
-- Build basis {1, α, α², ..., α^(k-1)} which generates the extension field as a vector space
+- Build basis {1, α, α^2, ..., α^(k-1)} which generates the extension field as a vector space
 - Find a generator g of the multiplicative group
-- Represent each element using the generator basis {1, g, g², ..., g^(k-1)}
+- Represent each element using the generator basis {1, g, g^2, ..., g^(k-1)}
 - Perform multiplication via matrix exponentiation
 
 **Disadvantages (why this was rejected):**
@@ -150,7 +150,24 @@ This approach embeds the multiplicative group of F_p^k into GL_k(F_p) (k×k matr
 - **Hash-to-Point**: Deterministic message-to-point mapping
 - **Tests**: Comprehensive unit tests for all components
 
-For detailed algorithm explanations, see the `docs/` directory.
+---
+
+## Documentation
+
+Detailed algorithm documentation is available in the `docs/` directory:
+
+1. **[Field Arithmetic](docs/01_field_arithmetic.md)**: Prime fields, polynomial arithmetic, extension fields, and the Extended Euclidean Algorithm
+2. **[Elliptic Curves](docs/02_elliptic_curves.md)**: Point operations, group order computation, and scalar multiplication
+3. **[Irreducible Polynomials](docs/03_irreducible_polynomials.md)**: Rabin's irreducibility test, embedding degree, and extension field construction
+4. **[Hash-to-Point](docs/04_hash_to_point.md)**: Deterministic message-to-point mapping with increment-and-try and cofactor clearing
+5. **[Factorization](docs/05_factorization.md)**: Trial division, prime factorization, and point order computation
+6. **[Test Suite](docs/06_test_suite.md)**: Complete test coverage with detailed calculations and expected results
+
+Each document includes:
+- Algorithm descriptions with pseudocode
+- Step-by-step examples with complete calculations
+- Implementation references to the codebase
+- Time complexity analysis where relevant
 
 ---
 
