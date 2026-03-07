@@ -23,7 +23,7 @@ namespace BLS.Fields.Implementations
                 throw new ArgumentException("Modulus must be a prime > 1", nameof(modulus));
             }
             Modulus = modulus;
-            _coefficients = [.. (coefficients ?? Array.Empty<int>()).Select(c => Modulu(c))];
+            _coefficients = (coefficients ?? Array.Empty<int>()).Select(c => Modulu(c)).ToArray();
             Trim();
         }
 
@@ -202,6 +202,73 @@ namespace BLS.Fields.Implementations
             var coeffs = new int[A.Degree + 1];
             for (int i = 0; i <= A.Degree; i++) coeffs[i] = (int)((long)A[i] * invLead % A.Modulus);
             return new Polynomial(A.Modulus, coeffs);
+        }
+
+        /// <summary>
+        /// Extended Euclidean algorithm for polynomials. Returns (g, s, t) such that s*a + t*b = g = gcd(a,b).
+        /// </summary>
+        public static (Polynomial Gcd, Polynomial S, Polynomial T) ExtendedGcd(Polynomial a, Polynomial b)
+        {
+            if (a.Modulus != b.Modulus) throw new ArgumentException("Modulus mismatch");
+            int p = a.Modulus;
+
+            var r0 = a.Clone();
+            var r1 = b.Clone();
+            var s0 = new Polynomial(p, 1); // 1
+            var s1 = new Polynomial(p);    // 0
+            var t0 = new Polynomial(p);    // 0
+            var t1 = new Polynomial(p, 1); // 1
+
+            while (!r1.IsZero)
+            {
+                var qr = DivRem(r0, r1);
+                var q = qr.Quotient;
+                var r = qr.Remainder;
+
+                var s = Sub(s0, Mul(q, s1));
+                var t = Sub(t0, Mul(q, t1));
+
+                r0 = r1; r1 = r;
+                s0 = s1; s1 = s;
+                t0 = t1; t1 = t;
+            }
+
+            // make gcd monic
+            if (r0.IsZero) return (r0, s0, t0);
+            int lead = r0[r0.Degree];
+            int invLead = ModInverse(lead, p);
+            if (invLead != 1)
+            {
+                // multiply r0, s0, t0 by invLead to make gcd monic
+                r0 = Mul(r0, new Polynomial(p, invLead));
+                s0 = Mul(s0, new Polynomial(p, invLead));
+                t0 = Mul(t0, new Polynomial(p, invLead));
+            }
+
+            return (r0, s0, t0);
+        }
+
+        /// <summary>
+        /// Compute multiplicative inverse of a modulo modulus. Assumes modulus is irreducible polynomial.
+        /// Throws if inverse does not exist.
+        /// </summary>
+        public static Polynomial InverseMod(Polynomial a, Polynomial modulus)
+        {
+            if (a.Modulus != modulus.Modulus) throw new ArgumentException("Modulus mismatch");
+            int p = a.Modulus;
+            if (a.IsZero) throw new InvalidOperationException("Zero polynomial has no inverse.");
+
+            var (g, s, t) = ExtendedGcd(a, modulus);
+            // g should be 1 (monic) for invertible a
+            if (g.IsZero || !(g.Degree == 0 && g[0] == 1))
+            {
+                throw new InvalidOperationException("Polynomial is not invertible modulo modulus (gcd != 1). ");
+            }
+
+            // s is Bezout coefficient: s*a + t*modulus = 1 => s is inverse. Reduce s modulo modulus to canonical rep.
+            var inv = Mod(s, modulus);
+            // ensure coefficients normalized
+            return inv;
         }
 
         private static int ModInverse(int a, int mod)
