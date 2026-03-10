@@ -21,25 +21,24 @@ namespace BLS.ElipticCurve.Implementations
             // determine underlying prime field from curve coefficients (A,B are PrimeFieldElement)
             var baseField = curve.A.Field;
             var p = baseField.Characteristic;
-            long x0 = EncodeMessageToInteger(message, p);
+            BigInteger x0 = EncodeMessageToInteger(message, p);
 
-            // Coefficients A and B as integers
-            int aInt = curve.A.Value;
-            int bInt = curve.B.Value;
+            // Coefficients A and B as BigInteger
+            BigInteger aInt = curve.A.Value;
+            BigInteger bInt = curve.B.Value;
 
             // Try and increment x until we find a quadratic residue for z = x^3 + a*x + b
-            for (int increametCandidate = 0; increametCandidate < p; increametCandidate++)
+            for (BigInteger increametCandidate = 0; increametCandidate < p; increametCandidate++)
             {
-                var xi = (int)((x0 + increametCandidate) % p);
+                var xi = (x0 + increametCandidate) % p;
                 // compute z = xi^3 + a*xi + b (mod p)
-                var zInt = (BigInteger.Pow(new BigInteger(xi), 3) + (BigInteger)aInt * xi + bInt) % p;
+                var zInt = (BigInteger.Pow(xi, 3) + aInt * xi + bInt) % p;
                 if (zInt < 0)
                 {
                     zInt += p;
                 }
 
-                var zVal = (int)zInt;
-                int yInt = NumberTheoryUtils.SqrtModP(zVal, p);
+                BigInteger yInt = NumberTheoryUtils.SqrtModP(zInt, p);
                 if (yInt == -1)
                 {
                     // no square root for this z -> try next x
@@ -63,14 +62,14 @@ namespace BLS.ElipticCurve.Implementations
             throw new InvalidOperationException("Failed to hash message to a curve point.");
         }
 
-        private static long EncodeMessageToInteger(string message, int p)
+        private static BigInteger EncodeMessageToInteger(string message, BigInteger p)
         {
             // Use Windows-1255 encoding (provider is registered in test startup)
             var enc = Encoding.GetEncoding(1255);
             var bytes = enc.GetBytes(message);
 
             // Interpret bytes as big-endian integer modulo p
-            long x0 = 0;
+            BigInteger x0 = 0;
             foreach (var b in bytes)
             {
                 x0 = (x0 * 256 + b) % p;

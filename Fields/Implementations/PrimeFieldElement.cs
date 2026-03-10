@@ -1,13 +1,14 @@
 ﻿using BLS.Fields.Interfaces;
+using System.Numerics;
 
 namespace BLS.Fields.Implementations
 {
     public class PrimeFieldElement : IFieldElement<PrimeFieldElement>
     {
         public PrimeField Field { get; }
-        public int Value { get; }
-        
-        public PrimeFieldElement(PrimeField field, long value)
+        public BigInteger Value { get; }
+
+        public PrimeFieldElement(PrimeField field, BigInteger value)
         {
             Field = field ?? throw new ArgumentNullException(nameof(field));
             Value = ModuloNormalize(value);
@@ -46,16 +47,16 @@ namespace BLS.Fields.Implementations
 
             // r = remainder, t = coefficient
             var modulus = Field.Characteristic;
-            var remainder = modulus;
-            var nextRemainder = Value;
-            var coefficient = 0;
-            var nextCoefficient = 1;
+            BigInteger remainder = modulus;
+            BigInteger nextRemainder = Value;
+            BigInteger coefficient = 0;
+            BigInteger nextCoefficient = 1;
 
             while (nextRemainder != 0)
             {
-                var quotient = remainder / nextRemainder;
+                BigInteger quotient = remainder / nextRemainder;
                 (remainder, nextRemainder) = (nextRemainder, remainder - quotient * nextRemainder);
-                var nextT = coefficient - quotient * nextCoefficient;
+                BigInteger nextT = coefficient - quotient * nextCoefficient;
                 (coefficient, nextCoefficient) = (nextCoefficient, nextT);
             }
 
@@ -65,7 +66,7 @@ namespace BLS.Fields.Implementations
                 throw new InvalidOperationException("Inverse does not exist. Ensure Field.Characteristic is prime.");
             }
 
-            int result = ModuloNormalize(coefficient);
+            BigInteger result = ModuloNormalize(coefficient);
             return new PrimeFieldElement(Field, result);
         }
 
@@ -88,9 +89,8 @@ namespace BLS.Fields.Implementations
                 return new PrimeFieldElement(Field, 0);
             }
 
-            long baseValue = Value;
-            long result = 1;
-            var p = Field.Characteristic;
+            BigInteger baseValue = Value;
+            BigInteger result = 1;
 
             while (exponent > 0)
             {
@@ -107,7 +107,7 @@ namespace BLS.Fields.Implementations
                 exponent >>= 1;
             }
 
-            return new PrimeFieldElement(Field, (int)result);
+            return new PrimeFieldElement(Field, result);
         }
         public override bool Equals(object other)
         {
@@ -152,7 +152,7 @@ namespace BLS.Fields.Implementations
             }
         }
 
-        private int ModuloNormalize(long x)
+        private BigInteger ModuloNormalize(BigInteger x)
         {
             var reminder = x % Field.Characteristic;
             if (reminder < 0)
@@ -160,7 +160,7 @@ namespace BLS.Fields.Implementations
                 reminder += Field.Characteristic;
             }
 
-            return (int)reminder;
+            return reminder;
         }
 
         #endregion

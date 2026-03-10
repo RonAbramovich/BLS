@@ -1,13 +1,14 @@
 ﻿using BLS.Fields.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace BLS.Fields.Implementations
 {
     public class PrimeField : IField<PrimeFieldElement>
     {
-        public int Characteristic { get; }
+        public BigInteger Characteristic { get; }
 
         public PrimeField(int prime)
         {
@@ -25,7 +26,7 @@ namespace BLS.Fields.Implementations
 
         public PrimeFieldElement One => new PrimeFieldElement(this, 1);
 
-        public PrimeFieldElement FromInt(long value) => new PrimeFieldElement(this, value);
+        public PrimeFieldElement FromInt(BigInteger value) => new PrimeFieldElement(this, value);
 
         public bool IsValid(PrimeFieldElement x)
         {

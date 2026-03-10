@@ -6,12 +6,12 @@ namespace BLS.Fields.Implementations
 {
     public static class NumberTheoryUtils
     {
-        public static int ModNormalize(long value, int modulus)
+        public static BigInteger ModNormalize(BigInteger value, BigInteger modulus)
         {
             if (modulus <= 0) throw new ArgumentException("Modulus must be positive.", nameof(modulus));
-            long r = value % modulus;
+            BigInteger r = value % modulus;
             if (r < 0) r += modulus;
-            return (int)r;
+            return r;
         }
 
         public static List<KeyValuePair<BigInteger,int>> Factorize(BigInteger n)
@@ -60,7 +60,7 @@ namespace BLS.Fields.Implementations
 
         // Compute modular square root for primes p where p % 4 == 3 using exponentiation shortcut.
         // Returns -1 when no square root exists. Assumes p is an odd prime and p % 4 == 3.
-        public static int SqrtModP(int z, int p)
+        public static BigInteger SqrtModP(BigInteger z, BigInteger p)
         {
             z = ModNormalize(z, p);
             if (z == 0) return 0;
@@ -72,12 +72,12 @@ namespace BLS.Fields.Implementations
             }
 
             // Check Legendre symbol: z^{(p-1)/2} mod p should be 1 if a square
-            var leg = BigInteger.ModPow(new BigInteger(z), new BigInteger((p - 1) / 2), new BigInteger(p));
+            var leg = BigInteger.ModPow(z, (p - 1) / 2, p);
             if (leg != 1) return -1; // no square root
 
             // For p % 4 == 3, sqrt(z) = z^{(p+1)/4} (mod p)
-            var y = BigInteger.ModPow(new BigInteger(z), new BigInteger((p + 1) / 4), new BigInteger(p));
-            return (int)y;
+            var y = BigInteger.ModPow(z, (p + 1) / 4, p);
+            return y;
         }
     }
 }

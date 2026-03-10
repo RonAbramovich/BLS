@@ -54,9 +54,9 @@ namespace BLS.Fields.Implementations
                 return this;
             }
 
-            int p = Field.Characteristic;
+            BigInteger p = Field.Characteristic;
             int deg = Poly.Degree;
-            var coeffs = new int[deg + 1];
+            var coeffs = new BigInteger[deg + 1];
             for (int i = 0; i <= deg; i++)
             {
                 coeffs[i] = (p - Poly[i]) % p;

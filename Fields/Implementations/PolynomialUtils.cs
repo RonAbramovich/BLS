@@ -10,7 +10,7 @@ namespace BLS.Fields.Implementations
         public static bool IsIrreducible(Polynomial poly)
         {
             ArgumentNullException.ThrowIfNull(poly);
-            int p = poly.Modulus;
+            BigInteger p = poly.Modulus;
             int d = poly.Degree;
             if (d <= 0)
             {
@@ -18,8 +18,7 @@ namespace BLS.Fields.Implementations
             }
 
             var x = Polynomial.X(p);
-            var pBig = new BigInteger(p);
-            var xPow = Polynomial.PowMod(x, BigInteger.Pow(pBig, d), poly);
+            var xPow = Polynomial.PowMod(x, BigInteger.Pow(p, d), poly);
             if (!Polynomial.Sub(xPow, x).IsZero)
             {
                 return false;
@@ -29,7 +28,7 @@ namespace BLS.Fields.Implementations
             foreach (var q in primeDivisors)
             {
                 int subDegree = d / q;
-                var xPowSub = Polynomial.PowMod(x, BigInteger.Pow(pBig, subDegree), poly);
+                var xPowSub = Polynomial.PowMod(x, BigInteger.Pow(p, subDegree), poly);
                 var common = Polynomial.Gcd(poly, Polynomial.Sub(xPowSub, x));
                 if (!(common.Degree == 0 && common[0] == 1))
                 {

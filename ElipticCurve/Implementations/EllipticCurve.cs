@@ -39,7 +39,7 @@ namespace BLS.ElipticCurve.Implementations
                     throw new NotSupportedException("Group order enumeration is supported only for prime fields (extension degree 1). Provide GroupOrder manually for extension fields.");
                 }
 
-                int characteristic = Field.Characteristic;
+                BigInteger characteristic = Field.Characteristic;
                 BigInteger totalPoints = 1; // include the point at infinity
 
                 // Euler's criterion: for a non-zero field element z in F_p (p odd),
@@ -47,9 +47,9 @@ namespace BLS.ElipticCurve.Implementations
                 // and z^{(p-1)/2} = -1 (mod p) iff z is a non-residue (no square roots).
                 // We compute z = x^3 + A*x + B for every x in F_p and use the criterion
                 // to decide whether to add 0, 1 or 2 points for that x.
-                long residueExponent = (characteristic - 1) / 2L;
+                long residueExponent = (long)((characteristic - 1) / 2);
 
-                for (int primeFieldElement = 0; primeFieldElement < characteristic; primeFieldElement++)
+                for (BigInteger primeFieldElement = 0; primeFieldElement < characteristic; primeFieldElement++)
                 {
                     var x = Field.FromInt(primeFieldElement);
                     var rhs = x.Power(3) + A * x + B; // right hand side: x^3 + A*x + B
