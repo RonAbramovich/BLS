@@ -91,6 +91,22 @@ namespace BLS.Fields.Implementations
             return new ExtensionFieldElement(Field, resPoly);
         }
 
+        public ExtensionFieldElement Power(BigInteger exponent)
+        {
+            if (exponent == 0)
+            {
+                return Field.One;
+            }
+
+            if (exponent < 0)
+            {
+                return MultiplicativeInverse().Power(-exponent); // g^{-n} = (g^{-1})^n
+            }
+
+            var resPoly = Polynomial.PowMod(Poly, exponent, Field.ModulusPolynomial);
+            return new ExtensionFieldElement(Field, resPoly);
+        }
+
         public override bool Equals(object? obj)
         {
             if (obj is not ExtensionFieldElement other || Field.Characteristic != other.Field.Characteristic 

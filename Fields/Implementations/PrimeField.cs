@@ -10,7 +10,7 @@ namespace BLS.Fields.Implementations
     {
         public BigInteger Characteristic { get; }
 
-        public PrimeField(int prime)
+        public PrimeField(BigInteger prime)
         {
             if (!IsPrime(prime))
             {
@@ -34,7 +34,7 @@ namespace BLS.Fields.Implementations
                 x.Value >= 0 && x.Value < Characteristic;
         }
 
-        private static bool IsPrime(int n)
+        private static bool IsPrime(BigInteger n)
         {
             if (n < 2)
             {
@@ -48,7 +48,8 @@ namespace BLS.Fields.Implementations
                 return false;
             }
 
-            for (int i = 3; i <= (int)Math.Sqrt(n); i += 2)
+            BigInteger sqrt = Sqrt(n);
+            for (BigInteger i = 3; i <= sqrt; i += 2)
             {
                 if (n % i == 0)
                 {
@@ -57,6 +58,20 @@ namespace BLS.Fields.Implementations
             }
 
             return true;
+        }
+
+        // Implementation of Math.Sqrt for BigInteger 
+        private static BigInteger Sqrt(BigInteger n)
+        {
+            if (n == 0) return 0;
+            BigInteger x = n / 2;
+            BigInteger y = (x + n / x) / 2;
+            while (y < x)
+            {
+                x = y;
+                y = (x + n / x) / 2;
+            }
+            return x;
         }
     }
 }

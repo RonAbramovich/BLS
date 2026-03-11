@@ -33,49 +33,118 @@ namespace BLS.ElipticCurve.Implementations
             {
                 if (_groupOrder.HasValue) return _groupOrder.Value;
 
-                // For extension degree != 1 a different counting method is required. In BLS ALgorithm we need only the group order of EC over prime field.
-                if (Field.ExtensionDegree != 1)
+                if (Field.ExtensionDegree == 1)
                 {
-                    throw new NotSupportedException("Group order enumeration is supported only for prime fields (extension degree 1). Provide GroupOrder manually for extension fields.");
+                    // Prime field: enumerate points using Euler's criterion
+                    _groupOrder = ComputeGroupOrderForPrimeField();
+                }
+                else
+                {
+                    // Extension field: use Frobenius trace recurrence
+                    _groupOrder = ComputeGroupOrderForExtensionField();
                 }
 
-                BigInteger characteristic = Field.Characteristic;
-                BigInteger totalPoints = 1; // include the point at infinity
-
-                // Euler's criterion: for a non-zero field element z in F_p (p odd),
-                // z^{(p-1)/2} = 1 (mod p) iff z is a quadratic residue (has two square roots),
-                // and z^{(p-1)/2} = -1 (mod p) iff z is a non-residue (no square roots).
-                // We compute z = x^3 + A*x + B for every x in F_p and use the criterion
-                // to decide whether to add 0, 1 or 2 points for that x.
-                long residueExponent = (long)((characteristic - 1) / 2);
-
-                for (BigInteger primeFieldElement = 0; primeFieldElement < characteristic; primeFieldElement++)
-                {
-                    var x = Field.FromInt(primeFieldElement);
-                    var rhs = x.Power(3) + A * x + B; // right hand side: x^3 + A*x + B
-
-                    if (rhs.IsZero)
-                    {
-                        // y^2 = 0 has exactly one solution y = 0
-                        totalPoints += 1;
-                        continue;
-                    }
-
-                    // Use Euler's criterion for odd characteristic
-                    var legendre = rhs.Power(residueExponent);
-                    if (legendre.Equals(Field.One))
-                    {
-                        // Quadratic residue -> two distinct y values
-                        totalPoints += 2;
-                    }
-                    // non-residue -> add 0
-                }
-
-                _groupOrder = totalPoints;
-                // compute and cache prime factorization of the group order
                 _factors = Factor(_groupOrder.Value);
                 return _groupOrder.Value;
             }
+        }
+
+        private BigInteger ComputeGroupOrderForPrimeField()
+        {
+            BigInteger characteristic = Field.Characteristic;
+            BigInteger totalPoints = 1; // include the point at infinity
+
+            // Euler's criterion: for a non-zero field element z in F_p (p odd),
+            // z^{(p-1)/2} = 1 (mod p) iff z is a quadratic residue (has two square roots),
+            // and z^{(p-1)/2} = -1 (mod p) iff z is a non-residue (no square roots).
+            // We compute z = x^3 + A*x + B for every x in F_p and use the criterion
+            // to decide whether to add 0, 1 or 2 points for that x.
+            long residueExponent = (long)((characteristic - 1) / 2);
+
+            for (BigInteger primeFieldElement = 0; primeFieldElement < characteristic; primeFieldElement++)
+            {
+                var x = Field.FromInt(primeFieldElement);
+                var rhs = x.Power(3) + A * x + B; // right hand side: x^3 + A*x + B
+
+                if (rhs.IsZero)
+                {
+                    // y^2 = 0 has exactly one solution y = 0
+                    totalPoints += 1;
+                    continue;
+                }
+
+                // Use Euler's criterion for odd characteristic
+                var legendre = rhs.Power(residueExponent);
+                if (legendre.Equals(Field.One))
+                {
+                    // Quadratic residue -> two distinct y values
+                    totalPoints += 2;
+                }
+                // non-residue -> add 0
+            }
+
+            return totalPoints;
+        }
+
+        private BigInteger ComputeGroupOrderForExtensionField()
+        {
+            // This method requires that the curve is defined over an extension field F_{q^k}
+            // where the base field is F_q (a prime field).
+            // We use the Frobenius trace recurrence to compute #E(F_{q^k})
+            // As presented in the paper Finding a point in E[r]
+
+
+            var extensionField = Field as BLS.Fields.Implementations.ExtensionField;
+            if (extensionField == null)
+            {
+                throw new InvalidOperationException("Extension field group order calculation requires ExtensionField type.");
+            }
+
+            var baseField = extensionField.BaseField;
+            BigInteger q = baseField.Characteristic;
+            int k = extensionField.ExtensionDegree;
+
+            // First, we need the group order over the base prime field to compute the Frobenius trace
+            // Create the same curve over the base field
+            var baseCurveA = baseField.FromInt(GetCoefficientAsInteger(A));
+            var baseCurveB = baseField.FromInt(GetCoefficientAsInteger(B));
+            var baseCurve = new EllipticCurve<BLS.Fields.Implementations.PrimeFieldElement>(baseField, baseCurveA, baseCurveB);
+
+            BigInteger baseGroupOrder = baseCurve.GroupOrder;
+
+            // Step 1: Compute Frobenius trace t = q + 1 - #E(F_q)
+            BigInteger t = q + 1 - baseGroupOrder;
+
+            // Step 3: Compute #E(F_{q^k}) using recurrence relation
+            // a_n = t*a_{n-1} - q*a_{n-2}, with a_0 = 2, a_1 = t
+            // Then N_k = q^k + 1 - a_k
+            BigInteger a_prev = 2;        // a_0
+            BigInteger a_curr = t;        // a_1
+
+            for (int n = 2; n <= k; n++)
+            {
+                BigInteger a_next = t * a_curr - q * a_prev;
+                a_prev = a_curr;
+                a_curr = a_next;
+            }
+
+            BigInteger N_k = BigInteger.Pow(q, k) + 1 - a_curr;
+            return N_k;
+        }
+
+        private BigInteger GetCoefficientAsInteger(T element)
+        {
+            // For extension field elements, we need the constant term (coefficient of x^0)
+            if (element is BLS.Fields.Implementations.ExtensionFieldElement extElement)
+            {
+                return extElement.Poly[0];
+            }
+            // For prime field elements
+            if (element is BLS.Fields.Implementations.PrimeFieldElement primeElement)
+            {
+                return primeElement.Value;
+            }
+            throw new InvalidOperationException("Unsupported field element type.");
         }
 
         public IReadOnlyList<(BigInteger Prime, int Power)> GroupOrderFactors
