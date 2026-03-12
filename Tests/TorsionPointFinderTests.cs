@@ -12,11 +12,7 @@ namespace BLS.Tests
         [Fact]
         public void FindIndependentTorsionPoint_ProperBLS_SameR()
         {
-            // ✅ LARGE FIELD: y^2 = x^3 + 1 over F_101
-            // ======================================
-            // Using LARGE prime q = 101 to ensure proper group structure
-            // This WILL work!
-
+            // LARGE FIELD: y^2 = x^3 + 1 over F_101            
             BigInteger q = 101;
             var baseField = new PrimeField(q);
             var baseCurve = new EllipticCurve<PrimeFieldElement>(
@@ -27,7 +23,7 @@ namespace BLS.Tests
 
             BigInteger baseGroupOrder = baseCurve.GroupOrder;
             BigInteger r = baseCurve.R;
-            var irreduciblePoly = new Polynomial(q, 2, 0, 1); // x² + 2
+            var irreduciblePoly = new Polynomial(q, 2, 0, 1); // x^2 + 2
             ExtensionField extensionField;
 
             try
@@ -49,28 +45,16 @@ namespace BLS.Tests
             );
 
             BigInteger N_k = extensionCurve.GroupOrder;
-            Console.WriteLine($"|E(F_{q}²)| = {N_k}");
-            Console.WriteLine($"========================\n");
-
             Assert.True(N_k % r == 0, $"r must divide extension curve order");
 
             var P = FindPointOfOrderR(baseCurve, r, baseField);
             Assert.NotNull(P);
             Assert.True(P.Multiply(r).IsInfinity);
 
-            Console.WriteLine($"Found P ∈ E(F_{q}) of order {r}");
-            Console.WriteLine($"Now finding Q ∈ E(F_{q}²) with same order...\n");
+            Console.WriteLine($"Found P in E(F_{q}) of order {r}");
+            Console.WriteLine($"Now finding Q in E(F_{q}²) with same order...\n");
 
-            // THIS WILL WORK with large q!
-            var Q = TorsionPointFinder.FindIndependentTorsionPoint(
-                extensionCurve,
-                r,
-                maxAttempts: 100
-            );
-
-            Console.WriteLine($"\n✅ SUCCESS! Found Q with:");
-            Console.WriteLine($"  Order: {r}");
-            Console.WriteLine($"  Rational: {Q.X.Poly.Degree <= 0 && Q.Y.Poly.Degree <= 0}");
+            var Q = TorsionPointFinder.FindIndependentTorsionPoint(extensionCurve, r, maxAttempts: 100);
 
             Assert.False(Q.IsInfinity);
             Assert.True(extensionCurve.IsOnCurve(Q));
@@ -78,8 +62,6 @@ namespace BLS.Tests
 
             bool isRational = (Q.X.Poly.Degree <= 0 && Q.Y.Poly.Degree <= 0);
             Assert.False(isRational, "Q must be irrational!");
-
-            Console.WriteLine($"\n🎉 ALGORITHM WORKS PERFECTLY WITH LARGE PARAMETERS!");
         }
 
         [Fact]
