@@ -13,17 +13,17 @@ namespace BLS.Fields.Implementations
     public class Polynomial
     {
         [Description("coefficients[i] is coefficient for x^i")]
-        private int[] _coefficients;
-        public int Modulus { get; }
+        private BigInteger[] _coefficients;
+        public BigInteger Modulus { get; }
 
-        public Polynomial(int modulus, params int[] coefficients)
+        public Polynomial(BigInteger modulus, params BigInteger[] coefficients)
         {
             if (modulus <= 1)
             {
                 throw new ArgumentException("Modulus must be a prime > 1", nameof(modulus));
             }
             Modulus = modulus;
-            _coefficients = (coefficients ?? Array.Empty<int>()).Select(c => Modulu(c)).ToArray();
+            _coefficients = (coefficients ?? Array.Empty<BigInteger>()).Select(c => Modulu(c)).ToArray();
             Trim();
         }
 
@@ -31,7 +31,7 @@ namespace BLS.Fields.Implementations
 
         public bool IsZero => Degree == -1;
 
-        public int this[int i] //Easy retriever for the ith coefficient
+        public BigInteger this[int i] //Easy retriever for the ith coefficient
         {
             get
             {
@@ -40,7 +40,7 @@ namespace BLS.Fields.Implementations
             }
         }
 
-        public static Polynomial X(int p)
+        public static Polynomial X(BigInteger p)
         {
             return new Polynomial(p, 0, 1); // (0,1) corresponds to the polynomial f(x)=x 
         }
@@ -57,9 +57,9 @@ namespace BLS.Fields.Implementations
                 throw new ArgumentException("Modulus mismatch");
             }
 
-            int p = a.Modulus;
+            BigInteger p = a.Modulus;
             int max = Math.Max(a.Degree, b.Degree);
-            var res = new int[max + 1];
+            var res = new BigInteger[max + 1];
             for (int i = 0; i <= max; i++)
             {
                 res[i] = (a[i] + b[i]) % p;
@@ -74,9 +74,9 @@ namespace BLS.Fields.Implementations
                 throw new ArgumentException("Modulus mismatch");
             }
 
-            int p = a.Modulus;
+            BigInteger p = a.Modulus;
             int max = Math.Max(a.Degree, b.Degree);
-            var res = new int[max + 1];
+            var res = new BigInteger[max + 1];
             for (int i = 0; i <= max; i++)
             {
                 res[i] = (a[i] - b[i]) % p;    
@@ -96,13 +96,13 @@ namespace BLS.Fields.Implementations
                 throw new ArgumentException("Modulus mismatch");
             }
 
-            int p = a.Modulus;
+            BigInteger p = a.Modulus;
             if (a.IsZero || b.IsZero)
             {
                 return new Polynomial(p);
             }
 
-            var res = new int[a.Degree + b.Degree + 1];
+            var res = new BigInteger[a.Degree + b.Degree + 1];
             for (int i = 0; i <= a.Degree; i++)
             {
                 if (a[i] == 0)
@@ -128,7 +128,7 @@ namespace BLS.Fields.Implementations
                 throw new ArgumentException("Modulus mismatch");
             }
 
-            int p = a.Modulus;
+            BigInteger p = a.Modulus;
             if (b.IsZero)
             {
                 throw new DivideByZeroException();
@@ -136,13 +136,13 @@ namespace BLS.Fields.Implementations
 
             var rCoeffs = a._coefficients.Select(c => c).ToList();
             int degB = b.Degree;
-            var quotient = new int[Math.Max(0, a.Degree - degB + 1)];
-            int invLeading = ModInverse(b[b.Degree], p);
+            var quotient = new BigInteger[Math.Max(0, a.Degree - degB + 1)];
+            BigInteger invLeading = ModInverse(b[b.Degree], p);
             for (int i = a.Degree; i >= b.Degree; i--)
             {
-                int coef = rCoeffs.Count > i ? rCoeffs[i] : 0;
+                BigInteger coef = rCoeffs.Count > i ? rCoeffs[i] : 0;
                 if (coef == 0) continue;
-                int qcoef = (int)((long)coef * invLeading % p);
+                BigInteger qcoef = coef * invLeading % p;
                 quotient[i - degB] = qcoef;
                 // subtract qcoef * b * x^{i-degB}
                 for (int j = 0; j <= degB; j++)
@@ -152,10 +152,10 @@ namespace BLS.Fields.Implementations
                     if (rCoeffs[idx] < 0) rCoeffs[idx] += p;
                 }
             }
-            var qpoly = new Polynomial(p, quotient);
+            var qpoly = new Polynomial(p, quotient.ToArray());
             // remainder is rCoeffs[0..degB-1]
             var rem = rCoeffs.Take(Math.Min(rCoeffs.Count, degB)).ToArray();
-            var rpoly = new Polynomial(p, rem);
+            var rpoly = new Polynomial(p, rem.ToArray());
             return (qpoly, rpoly);
         }
 
@@ -168,7 +168,7 @@ namespace BLS.Fields.Implementations
         public static Polynomial PowMod(Polynomial value, BigInteger exponent, Polynomial mod)
         {
             if (value.Modulus != mod.Modulus) throw new ArgumentException("Modulus mismatch");
-            int p = value.Modulus;
+            BigInteger p = value.Modulus;
             var result = new Polynomial(p, 1); // 1
             var basePoly = value.Clone();
             while (exponent > 0)
@@ -197,10 +197,10 @@ namespace BLS.Fields.Implementations
             }
             // Make monic
             if (A.IsZero) return A;
-            int lead = A[A.Degree];
-            int invLead = ModInverse(lead, A.Modulus);
-            var coeffs = new int[A.Degree + 1];
-            for (int i = 0; i <= A.Degree; i++) coeffs[i] = (int)((long)A[i] * invLead % A.Modulus);
+            BigInteger lead = A[A.Degree];
+            BigInteger invLead = ModInverse(lead, A.Modulus);
+            var coeffs = new BigInteger[A.Degree + 1];
+            for (int i = 0; i <= A.Degree; i++) coeffs[i] = A[i] * invLead % A.Modulus;
             return new Polynomial(A.Modulus, coeffs);
         }
 
@@ -210,7 +210,7 @@ namespace BLS.Fields.Implementations
         public static (Polynomial Gcd, Polynomial S, Polynomial T) ExtendedGcd(Polynomial a, Polynomial b)
         {
             if (a.Modulus != b.Modulus) throw new ArgumentException("Modulus mismatch");
-            int p = a.Modulus;
+            BigInteger p = a.Modulus;
 
             var r0 = a.Clone();
             var r1 = b.Clone();
@@ -235,8 +235,8 @@ namespace BLS.Fields.Implementations
 
             // make gcd monic
             if (r0.IsZero) return (r0, s0, t0);
-            int lead = r0[r0.Degree];
-            int invLead = ModInverse(lead, p);
+            BigInteger lead = r0[r0.Degree];
+            BigInteger invLead = ModInverse(lead, p);
             if (invLead != 1)
             {
                 // multiply r0, s0, t0 by invLead to make gcd monic
@@ -255,7 +255,7 @@ namespace BLS.Fields.Implementations
         public static Polynomial InverseMod(Polynomial a, Polynomial modulus)
         {
             if (a.Modulus != modulus.Modulus) throw new ArgumentException("Modulus mismatch");
-            int p = a.Modulus;
+            BigInteger p = a.Modulus;
             if (a.IsZero) throw new InvalidOperationException("Zero polynomial has no inverse.");
 
             var (g, s, t) = ExtendedGcd(a, modulus);
@@ -271,14 +271,14 @@ namespace BLS.Fields.Implementations
             return inv;
         }
 
-        private static int ModInverse(int a, int mod)
+        private static BigInteger ModInverse(BigInteger a, BigInteger mod)
         {
-            // extended euclidean for small modulus
-            int t = 0, newt = 1;
-            int r = mod, newr = a % mod;
+            // extended euclidean for modulus
+            BigInteger t = 0, newt = 1;
+            BigInteger r = mod, newr = a % mod;
             while (newr != 0)
             {
-                int q = r / newr;
+                BigInteger q = r / newr;
                 (t, newt) = (newt, t - q * newt);
                 (r, newr) = (newr, r - q * newr);
             }
@@ -293,7 +293,7 @@ namespace BLS.Fields.Implementations
             var parts = new List<string>();
             for (int i = Degree; i >= 0; i--)
             {
-                int c = this[i];
+                BigInteger c = this[i];
                 if (c == 0) continue;
                 if (i == 0) parts.Add(c.ToString());
                 else if (i == 1) parts.Add(c == 1 ? "x" : c + "x");
@@ -317,7 +317,7 @@ namespace BLS.Fields.Implementations
             }
         }
 
-        private int Modulu(long v)
+        private BigInteger Modulu(BigInteger v)
         {
             var r = v % Modulus;
             if (r < 0)
@@ -325,7 +325,7 @@ namespace BLS.Fields.Implementations
                 r += Modulus;
             }
 
-            return (int)r;
+            return r;
         }
         #endregion
     }

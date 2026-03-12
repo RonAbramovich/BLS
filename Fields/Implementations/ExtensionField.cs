@@ -8,7 +8,7 @@ namespace BLS.Fields.Implementations
 {
     public class ExtensionField : IField<ExtensionFieldElement>
     {
-        public int Characteristic { get; }
+        public BigInteger Characteristic { get; }
         public int ExtensionDegree { get; }
 
         public PrimeField BaseField { get; }
@@ -46,7 +46,7 @@ namespace BLS.Fields.Implementations
             }
         }
 
-        public ExtensionFieldElement FromInt(long value)
+        public ExtensionFieldElement FromInt(BigInteger value)
         {
             return new ExtensionFieldElement(this, new Polynomial(Characteristic, NumberTheoryUtils.ModNormalize(value, Characteristic)));
         }
@@ -58,7 +58,7 @@ namespace BLS.Fields.Implementations
             return x != null && x.Poly.Modulus == Characteristic;
         }
 
-        public BigInteger MultiplicativeGroupOrder => BigInteger.Pow(new BigInteger(Characteristic), ExtensionDegree) - 1;
+        public BigInteger MultiplicativeGroupOrder => BigInteger.Pow(Characteristic, ExtensionDegree) - 1;
 
         public IReadOnlyList<KeyValuePair<BigInteger,int>> MultiplicativeGroupOrderFactorization
         {

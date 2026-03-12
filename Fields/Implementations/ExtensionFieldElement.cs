@@ -54,9 +54,9 @@ namespace BLS.Fields.Implementations
                 return this;
             }
 
-            int p = Field.Characteristic;
+            BigInteger p = Field.Characteristic;
             int deg = Poly.Degree;
-            var coeffs = new int[deg + 1];
+            var coeffs = new BigInteger[deg + 1];
             for (int i = 0; i <= deg; i++)
             {
                 coeffs[i] = (p - Poly[i]) % p;
@@ -88,6 +88,22 @@ namespace BLS.Fields.Implementations
             }
 
             var resPoly = Polynomial.PowMod(Poly, new BigInteger(exponent), Field.ModulusPolynomial);
+            return new ExtensionFieldElement(Field, resPoly);
+        }
+
+        public ExtensionFieldElement Power(BigInteger exponent)
+        {
+            if (exponent == 0)
+            {
+                return Field.One;
+            }
+
+            if (exponent < 0)
+            {
+                return MultiplicativeInverse().Power(-exponent); // g^{-n} = (g^{-1})^n
+            }
+
+            var resPoly = Polynomial.PowMod(Poly, exponent, Field.ModulusPolynomial);
             return new ExtensionFieldElement(Field, resPoly);
         }
 
