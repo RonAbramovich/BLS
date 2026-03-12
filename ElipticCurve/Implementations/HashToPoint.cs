@@ -9,6 +9,11 @@ namespace BLS.ElipticCurve.Implementations
 {
     public static class HashToPoint
     {
+        // Maximum number of candidates to try in the hash-to-curve loop.
+        // With ~50% probability of each candidate succeeding, 256 attempts gives
+        // a failure probability of ~2^-256, which is negligible in practice.
+        private const int MaxHashToCurveAttempts = 256;
+
         /// <summary>
         /// Deterministic try-and-increment hash-to-point for curves over prime fields.
         /// Produces a point in the subgroup of order r by cofactor clearing: H(m) = (|G|/r) * P_temp.
@@ -27,10 +32,11 @@ namespace BLS.ElipticCurve.Implementations
             BigInteger aInt = curve.A.Value;
             BigInteger bInt = curve.B.Value;
 
-            // Try and increment x until we find a quadratic residue for z = x^3 + a*x + b
-            for (BigInteger increametCandidate = 0; increametCandidate < p; increametCandidate++)
+            // Try and increment x until we find a quadratic residue for z = x^3 + a*x + b.
+            // Limited to MaxHashToCurveAttempts to avoid an unbounded loop when p is large.
+            for (int incrementCandidate = 0; incrementCandidate < MaxHashToCurveAttempts; incrementCandidate++)
             {
-                var xi = (x0 + increametCandidate) % p;
+                var xi = (x0 + incrementCandidate) % p;
                 // compute z = xi^3 + a*xi + b (mod p)
                 var zInt = (BigInteger.Pow(xi, 3) + aInt * xi + bInt) % p;
                 if (zInt < 0)
