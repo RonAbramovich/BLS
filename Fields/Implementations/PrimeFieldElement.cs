@@ -154,13 +154,13 @@ namespace BLS.Fields.Implementations
 
         private BigInteger ModuloNormalize(BigInteger x)
         {
-            var reminder = x % Field.Characteristic;
-            if (reminder < 0)
+            var remainder = x % Field.Characteristic;
+            if (remainder < 0)
             {
-                reminder += Field.Characteristic;
+                remainder += Field.Characteristic;
             }
 
-            return reminder;
+            return remainder;
         }
 
         #endregion
