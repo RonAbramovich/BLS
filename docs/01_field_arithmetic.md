@@ -1,4 +1,4 @@
-﻿# Field Arithmetic Algorithms
+# Field Arithmetic Algorithms
 
 This document describes the arithmetic operations implemented for prime fields and extension fields in the BLS signature project.
 
@@ -25,7 +25,7 @@ ModNormalize(value, p):
 
 **Example**: 
 - Input: value = -3, p = 7
-- Output: 4 (since -3 ≡ 4 (mod 7))
+- Output: 4 (since -3 = 4 (mod 7))
 
 ---
 
@@ -37,32 +37,32 @@ ModNormalize(value, p):
 **Subtraction**: `(a - b) mod p`
 - Compute difference and normalize to [0, p-1]
 
-**Additive Inverse**: `-a ≡ p - a (mod p)` for a ≠ 0
+**Additive Inverse**: `-a = p - a (mod p)` for a != 0
 
 **Implementation**: `PrimeFieldElement.Add()`, `PrimeFieldElement.Sub()`, `PrimeFieldElement.AdditiveInverse()`
 
 **Example** (F_7):
-- 3 + 5 = 8 ≡ 1 (mod 7)
-- 3 - 5 = -2 ≡ 5 (mod 7)
-- Additive inverse of 3 is 4 (since 3 + 4 = 7 ≡ 0)
+- 3 + 5 = 8 = 1 (mod 7)
+- 3 - 5 = -2 = 5 (mod 7)
+- Additive inverse of 3 is 4 (since 3 + 4 = 7 = 0)
 
 ---
 
 ### 1.3 Multiplication
 
-**Algorithm**: `(a × b) mod p`
+**Algorithm**: `(a x b) mod p`
 - Compute product and normalize to [0, p-1]
 
 **Implementation**: `PrimeFieldElement.Multiply()`
 
 **Example** (F_7):
-- 3 × 5 = 15 ≡ 1 (mod 7)
+- 3 x 5 = 15 = 1 (mod 7)
 
 ---
 
 ### 1.4 Multiplicative Inverse (Extended Euclidean Algorithm)
 
-**Purpose**: Find the multiplicative inverse of a modulo p (i.e., find x such that a × x ≡ 1 (mod p)).
+**Purpose**: Find the multiplicative inverse of a modulo p (i.e., find x such that a x x = 1 (mod p)).
 
 **Algorithm**: Extended Euclidean Algorithm
 ```
@@ -71,13 +71,13 @@ ExtendedGCD(a, p):
     r_old = p, r_new = a
     t_old = 0, t_new = 1
     
-    while r_new ≠ 0:
+    while r_new != 0:
         quotient = r_old / r_new
-        (r_old, r_new) = (r_new, r_old - quotient × r_new)
-        (t_old, t_new) = (t_new, t_old - quotient × t_new)
+        (r_old, r_new) = (r_new, r_old - quotient x r_new)
+        (t_old, t_new) = (t_new, t_old - quotient x t_new)
     
     // At termination: r_old = gcd(a, p), t_old = inverse coefficient
-    if r_old ≠ 1:
+    if r_old != 1:
         throw "Inverse does not exist"
     
     return ModNormalize(t_old, p)
@@ -90,8 +90,8 @@ Finding inverse of 3:
 - Initial: r = (7, 3), t = (0, 1)
 - Step 1: q = 2, r = (3, 1), t = (1, -2)
 - Step 2: q = 3, r = (1, 0), t = (-2, 7)
-- Result: gcd = 1, inverse = 7 ≡ 5 (mod 7)
-- Verification: 3 × 5 = 15 ≡ 1 (mod 7) ✓
+- Result: gcd = 1, inverse = 7 = 5 (mod 7)
+- Verification: 3 x 5 = 15 = 1 (mod 7) (pass)
 
 ---
 
@@ -114,8 +114,8 @@ Power(a, n, p):
     
     while n > 0:
         if n is odd:
-            result = (result × base) mod p
-        base = (base × base) mod p
+            result = (result x base) mod p
+        base = (base x base) mod p
         n = n / 2  // integer division
     
     return result
@@ -127,12 +127,12 @@ Power(a, n, p):
 
 **Example** (F_7):
 Computing 3^5:
-- Binary representation of 5: 101₂
+- Binary representation of 5: 1012
 - Steps:
-  - n=5 (odd): result = 3, base = 9 ≡ 2, n = 2
+  - n=5 (odd): result = 3, base = 9 = 2, n = 2
   - n=2 (even): result = 3, base = 4, n = 1
-  - n=1 (odd): result = 12 ≡ 5, base = 16 ≡ 2, n = 0
-- Result: 3^5 ≡ 5 (mod 7)
+  - n=1 (odd): result = 12 = 5, base = 16 = 2, n = 0
+- Result: 3^5 = 5 (mod 7)
 
 **Negative Exponents**:
 - For a^(-n), first compute inverse of a, then raise to power n
@@ -148,12 +148,12 @@ Polynomials are used as the building blocks for extension fields. All polynomial
 
 **Addition**: Component-wise addition of coefficients (mod p)
 ```
-(a₀ + a₁x + a₂x^2) + (b₀ + b₁x + b₂x^2) = ((a₀+b₀) mod p) + ((a₁+b₁) mod p)x + ...
+(a0 + a1x + a2x^2) + (b0 + b1x + b2x^2) = ((a0+b0) mod p) + ((a1+b1) mod p)x + ...
 ```
 
 **Multiplication**: Standard polynomial multiplication followed by coefficient reduction (mod p)
 ```
-(a₀ + a₁x)(b₀ + b₁x) = a₀b₀ + (a₀b₁ + a₁b₀)x + a₁b₁x^2
+(a0 + a1x)(b0 + b1x) = a0b0 + (a0b1 + a1b0)x + a1b1x^2
 ```
 
 **Implementation**: `Polynomial.Add()`, `Polynomial.Mul()`
@@ -164,7 +164,7 @@ Polynomials are used as the building blocks for extension fields. All polynomial
 
 **Purpose**: Divide polynomial f(x) by g(x) to get quotient q(x) and remainder r(x) such that:
 ```
-f(x) = q(x) · g(x) + r(x)
+f(x) = q(x) * g(x) + r(x)
 ```
 where degree(r) < degree(g).
 
@@ -183,11 +183,11 @@ Divide(f, g):
         deg_diff = degree(remainder) - degree(g)
         
         // Create monomial term
-        term = coeff · x^(deg_diff)
+        term = coeff * x^(deg_diff)
         quotient = quotient + term
         
-        // Subtract term × g from remainder
-        remainder = remainder - term × g
+        // Subtract term x g from remainder
+        remainder = remainder - term x g
     
     return (quotient, remainder)
 ```
@@ -209,7 +209,7 @@ Divide f(x) = x^3 + 2x + 1 by g(x) = x^2 + 1:
 **Algorithm**: Similar to integer GCD
 ```
 GCD(a, b):
-    while b ≠ 0:
+    while b != 0:
         remainder = a mod b
         a = b
         b = remainder
@@ -226,7 +226,7 @@ GCD(a, b):
 
 ### 2.4 Polynomial Inverse Modulo (Extended Euclidean Algorithm)
 
-**Purpose**: Find polynomial h(x) such that f(x) · h(x) ≡ 1 (mod g(x)).
+**Purpose**: Find polynomial h(x) such that f(x) * h(x) = 1 (mod g(x)).
 
 **Algorithm**: Extended Euclidean Algorithm for Polynomials
 ```
@@ -234,17 +234,17 @@ ExtendedGCD(f, g):
     r_old = g, r_new = f
     t_old = 0, t_new = 1
     
-    while r_new ≠ 0:
+    while r_new != 0:
         (quotient, _) = Divide(r_old, r_new)
-        (r_old, r_new) = (r_new, r_old - quotient × r_new)
-        (t_old, t_new) = (t_new, t_old - quotient × t_new)
+        (r_old, r_new) = (r_new, r_old - quotient x r_new)
+        (t_old, t_new) = (t_new, t_old - quotient x t_new)
     
     if r_old is not constant 1:
         throw "Inverse does not exist"
     
     // Normalize so that r_old = 1
     scale = 1 / leadingCoeff(r_old)
-    return t_old × scale
+    return t_old x scale
 ```
 
 **Implementation**: `Polynomial.InverseMod()`
@@ -252,7 +252,7 @@ ExtendedGCD(f, g):
 **Example** (F_2, modulus x^2 + x + 1):
 Finding inverse of x:
 - The computation yields inverse = x + 1
-- Verification: x(x + 1) = x^2 + x ≡ 1 (mod x^2 + x + 1) in F_2 ✓
+- Verification: x(x + 1) = x^2 + x = 1 (mod x^2 + x + 1) in F_2 (pass)
 
 ---
 
@@ -264,7 +264,7 @@ Extension fields are constructed as F_p[x]/(g(x)) where g(x) is an irreducible p
 
 Elements are represented as polynomials of degree < k with coefficients in F_p:
 ```
-a = a₀ + a₁x + a₂x^2 + ... + a_(k-1)x^(k-1)
+a = a0 + a1x + a2x^2 + ... + a_(k-1)x^(k-1)
 ```
 
 ### 3.2 Addition and Subtraction
@@ -284,9 +284,9 @@ a = a₀ + a₁x + a₂x^2 + ... + a_(k-1)x^(k-1)
 **Implementation**: `ExtensionFieldElement.Multiply()`
 
 **Example** (F_3, modulus g(x) = x^2 + 1):
-- Computing x · x:
+- Computing x * x:
   - Product: x^2
-  - Reduction: x^2 ≡ -1 ≡ 2 (mod x^2 + 1) in F_3
+  - Reduction: x^2 = -1 = 2 (mod x^2 + 1) in F_3
   - Result: 2 (constant polynomial)
 
 ---
@@ -295,14 +295,14 @@ a = a₀ + a₁x + a₂x^2 + ... + a_(k-1)x^(k-1)
 
 **Algorithm**: Use Extended Euclidean Algorithm for polynomials to find h(x) such that:
 ```
-f(x) · h(x) ≡ 1 (mod g(x))
+f(x) * h(x) = 1 (mod g(x))
 ```
 
 **Implementation**: `ExtensionFieldElement.MultiplicativeInverse()`
 
 **Example** (F_3, modulus x^2 + 1):
 - Inverse of x is 2x
-- Verification: x · (2x) = 2x^2 ≡ 2(-1) ≡ -2 ≡ 1 (mod 3) ✓
+- Verification: x * (2x) = 2x^2 = 2(-1) = -2 = 1 (mod 3) (pass)
 
 ---
 
@@ -314,3 +314,4 @@ This implementation provides complete field arithmetic for:
 - **Extension Fields F_p^k**: Represented as quotient rings F_p[x]/(g(x))
 
 All algorithms follow standard number theory and abstract algebra techniques, optimized with binary exponentiation for efficient power computations.
+
