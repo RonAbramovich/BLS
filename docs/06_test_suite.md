@@ -2,6 +2,22 @@
 
 This document describes all the test cases in the BLS signature implementation, including the mathematical calculations and expected results.
 
+**Test Coverage: 40+ comprehensive tests across all components**
+
+---
+
+## Table of Contents
+
+1. [Prime Field Tests](#1-prime-field-tests)
+2. [Elliptic Curve Group Order Tests](#2-elliptic-curve-group-order-tests)
+3. [Elliptic Curve Point Arithmetic Tests](#3-elliptic-curve-point-arithmetic-tests)
+4. [Extension Field Tests](#4-extension-field-tests)
+5. [Torsion Point Finder Tests](#5-torsion-point-finder-tests)
+6. **[Line Function Tests](#6-line-function-tests)** 🆕
+7. **[Miller's Algorithm Tests](#7-millers-algorithm-tests)** 🆕
+8. **[Tate Pairing Tests](#8-tate-pairing-tests)** 🆕
+9. **[Group Order Verification](#9-group-order-verification)** 🆕
+
 ---
 
 ## 1. Prime Field Tests
@@ -430,3 +446,5 @@ The test suite provides comprehensive coverage of:
 - **Correctness**: All calculations verified by hand using modular arithmetic
 
 All tests include detailed mathematical verification to ensure the implementation matches theoretical expectations.
+ 
+ 
