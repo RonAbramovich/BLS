@@ -231,64 +231,56 @@ namespace BLS.Tests
             // Note: f can be zero in degenerate cases, but computation should complete
 
             // ═══════════════════════════════════════════════════════════════
-            // Step 9: TEST MILLER FUNCTION PROPERTIES
+            // Step 9: TEST COMPLETE TATE PAIRING WITH TRUE BILINEARITY
             // ═══════════════════════════════════════════════════════════════
 
-            // IMPORTANT NOTE: The Miller function f_{r,P}(Q) is NOT bilinear by itself!
-            // Bilinearity only holds AFTER final exponentiation: e(P,Q) = f_{r,P}(Q)^{(q^k-1)/r}
-            // 
-            // For the raw Miller function, we have a weaker property:
-            // f_{r,aP}(Q) = f_{r,P}(Q)^a · g(P,Q)^{(q^k-1)/r} for some g
-            // 
-            // Therefore, we test that:
-            // 1. Computation completes successfully for different scalars
-            // 2. Results are in the correct field
-            // 3. Deterministic behavior
+            // Compute complete Tate pairing e(P, Q) = f_{r,P}(Q)^((q^k-1)/r)
+            var e_P_Q = TatePairing.Compute(P, Q, r, baseCurve, extensionField);
+            Assert.NotNull(e_P_Q);
+            Assert.False(e_P_Q.IsZero, "Pairing e(P,Q) should be non-zero");
 
             BigInteger a = 2;  // Scalar for testing
             BigInteger b = 3;  // Scalar for testing
 
-            // Compute f_{r,aP}(Q) and f_{r,P}(Q)^a
+            // ═══════════════════════════════════════════════════════════════
+            // TEST BILINEARITY IN FIRST ARGUMENT: e(aP, Q) = e(P, Q)^a
+            // ═══════════════════════════════════════════════════════════════
+
             var aP = P.Multiply(a);
-            var f_aP_Q = MillerAlgorithm.ComputeMillerFunction(aP, Q, r, baseCurve, extensionField);
-            var f_P_Q_PowerA = f_P_Q.Power(a);
+            var e_aP_Q = TatePairing.Compute(aP, Q, r, baseCurve, extensionField);
+            var e_P_Q_PowerA = e_P_Q.Power(a);
 
-            Assert.NotNull(f_aP_Q);
-            Assert.NotNull(f_P_Q_PowerA);
+            Assert.NotNull(e_aP_Q);
+            Assert.NotNull(e_P_Q_PowerA);
+            Assert.True(e_aP_Q.Equals(e_P_Q_PowerA), 
+                $"Bilinearity in P: e({a}P, Q) must equal e(P, Q)^{a}");
 
-            // Note: These will generally NOT be equal for raw Miller function
-            // They become equal only after final exponentiation (Tate pairing)
-            // For now, we just verify both are valid non-zero field elements
-            Assert.False(f_aP_Q.IsZero || f_P_Q_PowerA.IsZero, 
-                "Miller function values should typically be non-zero");
+            // ═══════════════════════════════════════════════════════════════
+            // TEST BILINEARITY IN SECOND ARGUMENT: e(P, bQ) = e(P, Q)^b
+            // ═══════════════════════════════════════════════════════════════
 
-            // Compute f_{r,P}(bQ) and f_{r,P}(Q)^b
             var bQ = Q.Multiply(b);
-            var f_P_bQ = MillerAlgorithm.ComputeMillerFunction(P, bQ, r, baseCurve, extensionField);
-            var f_P_Q_PowerB = f_P_Q.Power(b);
+            var e_P_bQ = TatePairing.Compute(P, bQ, r, baseCurve, extensionField);
+            var e_P_Q_PowerB = e_P_Q.Power(b);
 
-            Assert.NotNull(f_P_bQ);
-            Assert.NotNull(f_P_Q_PowerB);
-
-            // Again, these won't be equal without final exponentiation
-            Assert.False(f_P_bQ.IsZero || f_P_Q_PowerB.IsZero, 
-                "Miller function values should typically be non-zero");
+            Assert.NotNull(e_P_bQ);
+            Assert.NotNull(e_P_Q_PowerB);
+            Assert.True(e_P_bQ.Equals(e_P_Q_PowerB), 
+                $"Bilinearity in Q: e(P, {b}Q) must equal e(P, Q)^{b}");
 
             // ═══════════════════════════════════════════════════════════════
-            // TODO: Once final exponentiation is implemented, test true bilinearity:
-            // var e_P_Q = FinalExponentiate(f_P_Q, q, k, r);
-            // var e_aP_Q = FinalExponentiate(f_aP_Q, q, k, r);
-            // var e_P_Q_PowerA = e_P_Q.Power(a);
-            // Assert.True(e_aP_Q.Equals(e_P_Q_PowerA), "e(aP,Q) = e(P,Q)^a");
-            // ═══════════════════════════════════════════════════════════════
-
-            // ═══════════════════════════════════════════════════════════════
-            // ADDITIONAL VALIDATIONS
+            // ADDITIONAL PAIRING PROPERTIES
             // ═══════════════════════════════════════════════════════════════
 
             // Verify deterministic: computing again gives same result
-            var f_P_Q_again = MillerAlgorithm.ComputeMillerFunction(P, Q, r, baseCurve, extensionField);
-            Assert.True(f_P_Q.Equals(f_P_Q_again), "Miller function must be deterministic");
+            var e_P_Q_again = TatePairing.Compute(P, Q, r, baseCurve, extensionField);
+            Assert.True(e_P_Q.Equals(e_P_Q_again), 
+                "Tate pairing must be deterministic");
+
+            // Verify e(P, Q) is in the correct subgroup (order divides r)
+            var e_P_Q_PowerR = e_P_Q.Power(r);
+            Assert.True(e_P_Q_PowerR.Equals(extensionField.One), 
+                "e(P, Q)^r must equal 1 (pairing values have order dividing r)");
         }
 
         #region Helper Methods
