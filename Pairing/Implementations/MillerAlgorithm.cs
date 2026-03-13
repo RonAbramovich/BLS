@@ -90,8 +90,7 @@ namespace BLS.Pairing.Implementations
                 }
             }
 
-            // At the end, T should equal r*P (which should be infinity if r is the order of P)
-            // The value f is our Miller function f_{r,P}(Q)
+            // At the end, T should equal r*P = infty; The value f is our Miller function f_{r,P}(Q)
 
             return f;
         }
@@ -99,6 +98,7 @@ namespace BLS.Pairing.Implementations
         /// <summary>
         /// Converts a BigInteger to its binary representation as a bit array.
         /// Returns bits from least significant (index 0) to most significant.
+        /// Uses modern .NET BigInteger methods for efficiency.
         /// </summary>
         /// <param name="value">Integer to convert</param>
         /// <returns>Array of bits (0 or 1), index 0 = LSB</returns>
@@ -109,40 +109,18 @@ namespace BLS.Pairing.Implementations
                 return new int[] { 0 };
             }
 
-            // Count number of bits needed
-            int bitCount = 0;
-            BigInteger temp = value;
-            while (temp > 0)
-            {
-                bitCount++;
-                temp >>= 1;
-            }
+            // Use .NET 7+ GetBitLength() - more efficient than manual counting
+            int bitCount = (int)value.GetBitLength();
 
-            // Extract bits (LSB at index 0)
+            // Extract bits using TestBit (or bit shifting)
             var bits = new int[bitCount];
             for (int i = 0; i < bitCount; i++)
             {
+                // Check if bit i is set (1 or 0)
                 bits[i] = (value & (BigInteger.One << i)) != 0 ? 1 : 0;
             }
 
             return bits;
-        }
-
-        /// <summary>
-        /// Helper method to get bit length of a BigInteger.
-        /// </summary>
-        private static int BitLength(BigInteger value)
-        {
-            if (value == 0) return 1;
-            
-            int length = 0;
-            BigInteger temp = BigInteger.Abs(value);
-            while (temp > 0)
-            {
-                length++;
-                temp >>= 1;
-            }
-            return length;
         }
     }
 }
