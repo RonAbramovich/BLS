@@ -1,4 +1,4 @@
-﻿# Factorization Algorithms
+# Factorization Algorithms
 
 This document describes the factorization methods used in the BLS signature implementation for computing group orders and point orders.
 
@@ -17,14 +17,14 @@ Factorization is used in several places:
 
 ### 2.1 Purpose
 
-Factor a positive integer n into prime factors: n = p₁^e₁ × p₂^e₂ × ... × pₖ^eₖ
+Factor a positive integer n into prime factors: n = p1^e1 x p2^e2 x ... x p?^e?
 
 ### 2.2 Algorithm
 
 ```
 Factorize(n):
     factors = []
-    if n ≤ 1: return factors
+    if n = 1: return factors
     
     m = n
     
@@ -36,9 +36,9 @@ Factorize(n):
     if count > 0:
         factors.add((prime: 2, power: count))
     
-    // Try odd divisors from 3 to √m
+    // Try odd divisors from 3 to vm
     f = 3
-    while f × f ≤ m:
+    while f x f = m:
         count = 0
         while m mod f = 0:
             count++
@@ -60,15 +60,15 @@ Factorize(n):
 
 Factoring 360:
 - m = 360
-- Remove 2s: 360/2 = 180, 180/2 = 90, 90/2 = 45 → (2, 3), m = 45
-- Try f=3: 45/3 = 15, 15/3 = 5 → (3, 2), m = 5
+- Remove 2s: 360/2 = 180, 180/2 = 90, 90/2 = 45 to (2, 3), m = 45
+- Try f=3: 45/3 = 15, 15/3 = 5 to (3, 2), m = 5
 - Try f=5: f^2 = 25 > 5, stop loop
-- m = 5 > 1 → (5, 1)
-- Result: 360 = 2^3 × 3^2 × 5^1
+- m = 5 > 1 to (5, 1)
+- Result: 360 = 2^3 x 3^2 x 5^1
 
 ### 2.4 Time Complexity
 
-- **Worst case**: O(√n) when n is prime
+- **Worst case**: O(vn) when n is prime
 - **Average case**: Much faster for composite numbers
 - **Suitable for**: Small to medium integers (up to ~10^1^5 for reasonable performance)
 
@@ -87,7 +87,7 @@ GetPrimeDivisors(n):
     primes = []
     t = n
     
-    // Check divisors from 2 to √t
+    // Check divisors from 2 to vt
     for p = 2 to sqrt(t) (incrementing p):
         if t mod p = 0:
             primes.add(p)
@@ -114,12 +114,12 @@ GetPrimeDivisors(n):
 
 GetPrimeDivisors(60):
 - t = 60
-- p=2: 60 mod 2 = 0 → add 2, reduce: t = 60/4 = 15
-- p=3: 15 mod 3 = 0 → add 3, reduce: t = 15/9... wait, let me recalculate
-- p=2: add 2, t = 60 → 30 → 15
-- p=3: add 3, t = 15 → 5
-- p=5: reaches end of loop (5×5 > 5)
-- t=5 > 1 → add 5
+- p=2: 60 mod 2 = 0 to add 2, reduce: t = 60/4 = 15
+- p=3: 15 mod 3 = 0 to add 3, reduce: t = 15/9... wait, let me recalculate
+- p=2: add 2, t = 60 to 30 to 15
+- p=3: add 3, t = 15 to 5
+- p=5: reaches end of loop (5x5 > 5)
+- t=5 > 1 to add 5
 - Result: [2, 3, 5]
 
 ---
@@ -150,7 +150,7 @@ In BLS signatures:
 
 ### 4.4 Example
 
-Group order = 420 = 2^2 × 3 × 5 × 7
+Group order = 420 = 2^2 x 3 x 5 x 7
 - Prime factors: 2, 3, 5, 7
 - R = max{2, 3, 5, 7} = 7
 
@@ -181,12 +181,12 @@ This means order(P) can be written as a product of prime powers that divide N.
 **How It Works**:
 - Start with ord = N (maximum possible order)
 - For each prime p dividing N, try removing factors of p
-- If (ord/p) × P = O, then we can reduce ord by p
+- If (ord/p) x P = O, then we can reduce ord by p
 - Continue until no more reduction possible
 
 ### 5.4 Example
 
-Group order N = 12 = 2^2 × 3
+Group order N = 12 = 2^2 x 3
 Point P with actual order 6
 
 Prime factorization: [(2, 2), (3, 1)]
@@ -195,15 +195,15 @@ Prime factorization: [(2, 2), (3, 1)]
 
 **Test prime 2**:
 - Iteration 1: candidate = 12/2 = 6
-  - Check: 6P = O? → Yes (assuming point has order 6)
+  - Check: 6P = O? to Yes (assuming point has order 6)
   - Update: ord = 6
 - Iteration 2: candidate = 6/2 = 3
-  - Check: 3P = O? → No (point has order 6, so 3P ≠ O)
+  - Check: 3P = O? to No (point has order 6, so 3P != O)
   - Break
 
 **Test prime 3**:
 - Iteration 1: candidate = 6/3 = 2
-  - Check: 2P = O? → No
+  - Check: 2P = O? to No
   - Break
 
 **Result**: order(P) = 6
@@ -217,4 +217,5 @@ Prime factorization: [(2, 2), (3, 1)]
 **Implementation**: `ECPoint<T>.Order` property
 
 ---
+
 

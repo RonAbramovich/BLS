@@ -1,4 +1,4 @@
-﻿# Irreducible Polynomials and Extension Field Construction
+# Irreducible Polynomials and Extension Field Construction
 
 This document explains how to find irreducible polynomials and construct extension fields for the BLS signature scheme.
 
@@ -10,7 +10,7 @@ This document explains how to find irreducible polynomials and construct extensi
 
 An **extension field** F_p^k is a field containing F_p with exactly p^k elements. It can be constructed as:
 ```
-F_p^k ≅ F_p[x] / (g(x))
+F_p^k ? F_p[x] / (g(x))
 ```
 where g(x) is an **irreducible polynomial** of degree k over F_p.
 
@@ -56,8 +56,8 @@ FindEmbeddingDegree(p, r, maxSearch):
 
 **Example**:
 - p = 2, r = 3
-- Test k=1: 2^1 - 1 = 1, 1 mod 3 = 1 ✗
-- Test k=2: 2^2 - 1 = 3, 3 mod 3 = 0 ✓
+- Test k=1: 2^1 - 1 = 1, 1 mod 3 = 1 ?
+- Test k=2: 2^2 - 1 = 3, 3 mod 3 = 0 (pass)
 - Embedding degree k = 2
 
 ---
@@ -68,7 +68,7 @@ Rabin's test is an efficient algorithm to check if a polynomial g(x) of degree k
 
 ### 3.1 Theorem (Rabin's Criterion)
 
-A polynomial g(x) ∈ F_p[x] of degree k is irreducible if and only if:
+A polynomial g(x) ? F_p[x] of degree k is irreducible if and only if:
 
 1. **Condition 1**: g(x) divides x^(p^k) - x
    
@@ -83,11 +83,11 @@ A polynomial g(x) ∈ F_p[x] of degree k is irreducible if and only if:
 ```
 IsIrreducible(g, p):
     k = degree of g
-    if k ≤ 0: return false
+    if k = 0: return false
     
     // Condition 1: Check if g divides x^(p^k) - x
     x_power = x^(p^k) mod g(x)
-    if x_power ≠ x:
+    if x_power != x:
         return false
     
     // Condition 2: Check for each prime divisor of k
@@ -96,7 +96,7 @@ IsIrreducible(g, p):
         sub_degree = k / q
         x_power_sub = x^(p^sub_degree) mod g(x)
         common = gcd(g(x), x_power_sub - x)
-        if common ≠ 1:
+        if common != 1:
             return false
     
     return true
@@ -115,11 +115,11 @@ Parameters: p = 2, k = 2, g(x) = x^2 + x + 1
 **Step 1 - Condition 1**: Check if g(x) divides x^(2^2) - x = x^4 - x
 
 Compute x^4 mod (x^2 + x + 1) over F_2:
-- x^2 ≡ -x - 1 ≡ x + 1 (mod g(x)) in F_2
-- x^4 = (x^2)^2 ≡ (x + 1)^2 = x^2 + 2x + 1 ≡ x^2 + 1 (in F_2, 2=0)
-- x^4 ≡ (x + 1) + 1 = x (mod g(x))
+- x^2 = -x - 1 = x + 1 (mod g(x)) in F_2
+- x^4 = (x^2)^2 = (x + 1)^2 = x^2 + 2x + 1 = x^2 + 1 (in F_2, 2=0)
+- x^4 = (x + 1) + 1 = x (mod g(x))
 
-So x^4 - x ≡ 0 (mod g(x)) ✓
+So x^4 - x = 0 (mod g(x)) (pass)
 
 **Step 2 - Condition 2**: Find prime divisors of k=2
 
@@ -132,10 +132,10 @@ For q = 2:
   - x^2 - x = x(x - 1) = x(x + 1) in F_2
   - g(x) = x^2 + x + 1
   - gcd(x^2 + x + 1, x^2 + x) using Euclidean algorithm:
-    - x^2 + x + 1 = 1 · (x^2 + x) + 1
-    - gcd = 1 ✓
+    - x^2 + x + 1 = 1 * (x^2 + x) + 1
+    - gcd = 1 (pass)
 
-Both conditions satisfied → **x^2 + x + 1 is irreducible over F_2**
+Both conditions satisfied to **x^2 + x + 1 is irreducible over F_2**
 
 ---
 
@@ -192,15 +192,15 @@ Test x^2:
 
 Test x^2 + 1:
 - x^2 + 1 = (x + 1)(x + 1) = (x + 1)^2 in F_2 (since (x+1)^2 = x^2+1 in characteristic 2)
-- Reducible ✗
+- Reducible ?
 
 Test x^2 + x:
 - x^2 + x = x(x + 1)
-- Reducible ✗
+- Reducible ?
 
 Test x^2 + x + 1:
 - Use Rabin's test (as shown in previous example)
-- Irreducible ✓
+- Irreducible (pass)
 
 **Result**: g(x) = x^2 + x + 1
 
@@ -249,8 +249,8 @@ Elements of F_2^2:
 These 4 elements form the complete field F_4.
 
 **Multiplication example** in F_4:
-- x · x = x^2 ≡ x + 1 (mod x^2 + x + 1)
-- x · (x + 1) = x^2 + x ≡ (x + 1) + x = 1 (mod x^2 + x + 1)
+- x * x = x^2 = x + 1 (mod x^2 + x + 1)
+- x * (x + 1) = x^2 + x = (x + 1) + x = 1 (mod x^2 + x + 1)
 
 ---
 
@@ -299,3 +299,4 @@ The process of constructing an extension field for BLS signatures involves:
 **Rabin's Irreducibility Test** provides an efficient deterministic method to verify that a polynomial cannot be factored, which is essential for the security and correctness of the cryptographic construction.
 
 This approach ensures that the extension field has the correct algebraic properties required for implementing the bilinear pairing in BLS signatures.
+
