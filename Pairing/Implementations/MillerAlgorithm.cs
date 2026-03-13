@@ -21,16 +21,50 @@ namespace BLS.Pairing.Implementations
         /// <param name="r">Order parameter (typically prime order of P)</param>
         /// <param name="baseCurve">Elliptic curve over base field</param>
         /// <param name="extensionField">Extension field F_q^k</param>
-        /// <returns>Value f_{r,P}(Q) ∈ F_q^k</returns>
-        /// <exception cref="ArgumentException">If P is at infinity or Q is at infinity</exception>
-        public static ExtensionFieldElement ComputeMillerFunction(
-            IECPoint<PrimeFieldElement> P,
-            IECPoint<ExtensionFieldElement> Q,
-            BigInteger r,
-            EllipticCurve<PrimeFieldElement> baseCurve,
-            ExtensionField extensionField)
+        /// <returns>Value f_{r,P}(Q) \in F_q^k</returns>
+        public static ExtensionFieldElement ComputeMillerFunction(IECPoint<PrimeFieldElement> P, IECPoint<ExtensionFieldElement> Q,
+            BigInteger r, EllipticCurve<PrimeFieldElement> baseCurve, ExtensionField extensionField)
         {
-            // Validate inputs
+            ValidateInputs(P, Q, r);
+
+            // Initialize accumulator f = 1 (in extension field)
+            var f = extensionField.One;
+            var T = P;
+            var rBits = NumberTheoryUtils.GetBinaryBits(r);
+
+            // Skip the most significant bit (always 1) - start from second bit
+            for (int i = rBits.Length - 2; i >= 0; i--)
+            {
+                DoubleStep(Q, baseCurve, extensionField, ref f, ref T);
+
+                // ADDITION STEP: Only if current bit is 1
+                if (rBits[i] == 1)
+                {
+                    // f = f * l_{T,P}(Q)
+                    var chordLine = LineFunctionUtils.EvaluateChordLine(T, P, Q, extensionField);
+                    f = f * chordLine;
+
+                    // T = T + P (point addition on base curve)
+                    T = T.Add(P);
+                }
+            }
+
+            return f;
+        }
+
+        private static void DoubleStep(IECPoint<ExtensionFieldElement> Q, EllipticCurve<PrimeFieldElement> baseCurve, ExtensionField extensionField, ref ExtensionFieldElement f, ref IECPoint<PrimeFieldElement> T)
+        {
+            // DOUBLING STEP: Always executed f = f^2 * l_{T,T}(Q)
+            f = f * f;
+            var tangentLine = LineFunctionUtils.EvaluateTangentLine(T, Q, extensionField, baseCurve.A);
+            f = f * tangentLine;
+
+            // T = 2T (point doubling on base curve)
+            T = T.Double();
+        }
+
+        private static void ValidateInputs(IECPoint<PrimeFieldElement> P, IECPoint<ExtensionFieldElement> Q, BigInteger r)
+        {
             if (P.IsInfinity)
             {
                 throw new ArgumentException("Point P cannot be at infinity", nameof(P));
@@ -45,48 +79,6 @@ namespace BLS.Pairing.Implementations
             {
                 throw new ArgumentException("Order r must be > 1", nameof(r));
             }
-
-            // Initialize accumulator f = 1 (in extension field)
-            var f = extensionField.One;
-            var T = P;
-            var rBits = NumberTheoryUtils.GetBinaryBits(r);
-
-            // Skip the most significant bit (always 1) - start from second bit
-            for (int i = rBits.Length - 2; i >= 0; i--)
-            {
-                // ═══════════════════════════════════════════════════════
-                // DOUBLING STEP: Always executed
-                // ═══════════════════════════════════════════════════════
-                
-                // f = f² * l_{T,T}(Q)
-                f = f * f;  // Square the accumulator
-                
-                var tangentLine = LineFunctionUtils.EvaluateTangentLine(
-                    T, Q, extensionField, baseCurve.A);
-                
-                f = f * tangentLine;
-
-                // T = 2T (point doubling on base curve)
-                T = T.Double();
-
-                // ═══════════════════════════════════════════════════════
-                // ADDITION STEP: Only if current bit is 1
-                // ═══════════════════════════════════════════════════════
-                
-                if (rBits[i] == 1)
-                {
-                    // f = f * l_{T,P}(Q)
-                    var chordLine = LineFunctionUtils.EvaluateChordLine(
-                        T, P, Q, extensionField);
-                    
-                    f = f * chordLine;
-
-                    // T = T + P (point addition on base curve)
-                    T = T.Add(P);
-                }
-            }
-
-            return f;
         }
     }
 }
