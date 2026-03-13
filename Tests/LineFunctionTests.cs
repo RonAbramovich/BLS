@@ -13,7 +13,7 @@ namespace BLS.Tests
         public void EvaluateTangentLine_SimpleCase_ReturnsNonZero()
         {
             // Arrange: Small field for manual verification
-            // Curve: y² = x³ + 1 over F_13
+            // Curve: y^2 = x^3 + 1 over F_13
             BigInteger q = 13;
             var baseField = new PrimeField(q);
             var baseCurve = new EllipticCurve<PrimeFieldElement>(
@@ -22,15 +22,11 @@ namespace BLS.Tests
                 baseField.FromInt(1)   // B = 1
             );
 
-            // Extension field F_13²
-            var irreduciblePoly = new Polynomial(q, 2, 0, 1); // x² + 2
+            // Extension field F_13^2
+            var irreduciblePoly = new Polynomial(q, 2, 0, 1); // x^2 + 2
             var extensionField = new ExtensionField(baseField, irreduciblePoly);
 
-            var extensionCurve = new EllipticCurve<ExtensionFieldElement>(
-                extensionField,
-                extensionField.FromInt(0),
-                extensionField.FromInt(1)
-            );
+            var extensionCurve = new EllipticCurve<ExtensionFieldElement>(extensionField, extensionField.FromInt(0), extensionField.FromInt(1));
 
             // T = (2, 3) is on the curve over F_13
             var T = baseCurve.CreatePoint(baseField.FromInt(2), baseField.FromInt(3));
@@ -39,20 +35,10 @@ namespace BLS.Tests
             // Q = (x, 2) where x is a polynomial in extension field
             var Q_x = new ExtensionFieldElement(extensionField, new Polynomial(q, 1, 1)); // x + 1
             var Q_y = extensionField.FromInt(2);
-            
-            // Find a valid Q on extension curve (we may need to adjust y)
-            // For this test, we'll create Q that's definitely on the curve
             var rhs = Q_x.Power(3).Add(extensionCurve.B);
-            // We'll just check that line evaluation doesn't throw
 
             // Act: Evaluate tangent line at T, evaluated at a point
-            var result = LineFunctionUtils.EvaluateTangentLine(
-                T,
-                extensionCurve.CreatePoint(Q_x, Q_y),
-                extensionField,
-                baseCurve.A);
-
-            // Assert: Result should be in extension field and not null
+            var result = LineFunctionUtils.EvaluateTangentLine(T, extensionCurve.CreatePoint(Q_x, Q_y), extensionField, baseCurve.A);
             Assert.NotNull(result);
             Assert.IsType<ExtensionFieldElement>(result);
         }
@@ -63,34 +49,16 @@ namespace BLS.Tests
             // Arrange
             BigInteger q = 13;
             var baseField = new PrimeField(q);
-            var baseCurve = new EllipticCurve<PrimeFieldElement>(
-                baseField,
-                baseField.FromInt(0),
-                baseField.FromInt(1)
-            );
-
+            var baseCurve = new EllipticCurve<PrimeFieldElement>(baseField, baseField.FromInt(0), baseField.FromInt(1));
             var irreduciblePoly = new Polynomial(q, 2, 0, 1);
             var extensionField = new ExtensionField(baseField, irreduciblePoly);
 
-            var extensionCurve = new EllipticCurve<ExtensionFieldElement>(
-                extensionField,
-                extensionField.FromInt(0),
-                extensionField.FromInt(1)
-            );
+            var extensionCurve = new EllipticCurve<ExtensionFieldElement>(extensionField, extensionField.FromInt(0), extensionField.FromInt(1));
 
             var T_infinity = baseCurve.Infinity;
-            var Q = extensionCurve.CreatePoint(
-                extensionField.FromInt(1),
-                extensionField.FromInt(1));
+            var Q = extensionCurve.CreatePoint(extensionField.FromInt(1), extensionField.FromInt(1));
 
-            // Act
-            var result = LineFunctionUtils.EvaluateTangentLine(
-                T_infinity,
-                Q,
-                extensionField,
-                baseCurve.A);
-
-            // Assert
+            var result = LineFunctionUtils.EvaluateTangentLine(T_infinity, Q, extensionField, baseCurve.A);
             Assert.True(result.Equals(extensionField.One), 
                 "Tangent line at infinity should return 1");
         }
