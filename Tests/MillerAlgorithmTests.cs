@@ -231,25 +231,56 @@ namespace BLS.Tests
             // Note: f can be zero in degenerate cases, but computation should complete
 
             // ═══════════════════════════════════════════════════════════════
-            // Step 9: TEST BILINEARITY PROPERTIES
+            // Step 9: TEST MILLER FUNCTION PROPERTIES
             // ═══════════════════════════════════════════════════════════════
+
+            // IMPORTANT NOTE: The Miller function f_{r,P}(Q) is NOT bilinear by itself!
+            // Bilinearity only holds AFTER final exponentiation: e(P,Q) = f_{r,P}(Q)^{(q^k-1)/r}
+            // 
+            // For the raw Miller function, we have a weaker property:
+            // f_{r,aP}(Q) = f_{r,P}(Q)^a · g(P,Q)^{(q^k-1)/r} for some g
+            // 
+            // Therefore, we test that:
+            // 1. Computation completes successfully for different scalars
+            // 2. Results are in the correct field
+            // 3. Deterministic behavior
 
             BigInteger a = 2;  // Scalar for testing
             BigInteger b = 3;  // Scalar for testing
 
-            // BILINEARITY IN FIRST ARGUMENT: f_{r,aP}(Q) should relate to f_{r,P}(Q)^a
+            // Compute f_{r,aP}(Q) and f_{r,P}(Q)^a
             var aP = P.Multiply(a);
             var f_aP_Q = MillerAlgorithm.ComputeMillerFunction(aP, Q, r, baseCurve, extensionField);
+            var f_P_Q_PowerA = f_P_Q.Power(a);
 
-            // For full pairing, we'd have: e(aP, Q) = e(P, Q)^a
-            // For Miller function before final exponentiation, the relationship is more complex
-            // But we can verify both computations complete successfully
             Assert.NotNull(f_aP_Q);
+            Assert.NotNull(f_P_Q_PowerA);
 
-            // BILINEARITY IN SECOND ARGUMENT: f_{r,P}(bQ) should relate to f_{r,P}(Q)^b
+            // Note: These will generally NOT be equal for raw Miller function
+            // They become equal only after final exponentiation (Tate pairing)
+            // For now, we just verify both are valid non-zero field elements
+            Assert.False(f_aP_Q.IsZero || f_P_Q_PowerA.IsZero, 
+                "Miller function values should typically be non-zero");
+
+            // Compute f_{r,P}(bQ) and f_{r,P}(Q)^b
             var bQ = Q.Multiply(b);
             var f_P_bQ = MillerAlgorithm.ComputeMillerFunction(P, bQ, r, baseCurve, extensionField);
+            var f_P_Q_PowerB = f_P_Q.Power(b);
+
             Assert.NotNull(f_P_bQ);
+            Assert.NotNull(f_P_Q_PowerB);
+
+            // Again, these won't be equal without final exponentiation
+            Assert.False(f_P_bQ.IsZero || f_P_Q_PowerB.IsZero, 
+                "Miller function values should typically be non-zero");
+
+            // ═══════════════════════════════════════════════════════════════
+            // TODO: Once final exponentiation is implemented, test true bilinearity:
+            // var e_P_Q = FinalExponentiate(f_P_Q, q, k, r);
+            // var e_aP_Q = FinalExponentiate(f_aP_Q, q, k, r);
+            // var e_P_Q_PowerA = e_P_Q.Power(a);
+            // Assert.True(e_aP_Q.Equals(e_P_Q_PowerA), "e(aP,Q) = e(P,Q)^a");
+            // ═══════════════════════════════════════════════════════════════
 
             // ═══════════════════════════════════════════════════════════════
             // ADDITIONAL VALIDATIONS
