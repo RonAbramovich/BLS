@@ -143,5 +143,29 @@ namespace BLS.Fields.Implementations
 
             return ModNormalize(result, modulus);
         }
+
+        /// <summary>
+        /// Converts a BigInteger to its binary representation as a bit array.
+        /// Returns bits from least significant (index 0) to most significant.
+        /// </summary>
+        /// <param name="value">Integer to convert</param>
+        /// <returns>Array of bits (0 or 1), index 0 = LSB</returns>
+        public static int[] GetBinaryBits(BigInteger value)
+        {
+            if (value <= 0)
+            {
+                return new int[] { 0 };
+            }
+
+            var bitCount = (int)value.GetBitLength();
+            var bits = new int[bitCount];
+
+            for (int i = 0; i < bitCount; i++)
+            {
+                bits[i] = (value & (BigInteger.One << i)) != 0 ? 1 : 0;
+            }
+
+            return bits;
+        }
     }
 }

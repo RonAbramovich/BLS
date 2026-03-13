@@ -48,12 +48,8 @@ namespace BLS.Pairing.Implementations
 
             // Initialize accumulator f = 1 (in extension field)
             var f = extensionField.One;
-
-            // Initialize working point T = P
             var T = P;
-
-            // Get binary representation of r (bits from most significant to least)
-            var rBits = GetBinaryBits(r);
+            var rBits = NumberTheoryUtils.GetBinaryBits(r);
 
             // Skip the most significant bit (always 1) - start from second bit
             for (int i = rBits.Length - 2; i >= 0; i--)
@@ -90,37 +86,7 @@ namespace BLS.Pairing.Implementations
                 }
             }
 
-            // At the end, T should equal r*P = infty; The value f is our Miller function f_{r,P}(Q)
-
             return f;
-        }
-
-        /// <summary>
-        /// Converts a BigInteger to its binary representation as a bit array.
-        /// Returns bits from least significant (index 0) to most significant.
-        /// Uses modern .NET BigInteger methods for efficiency.
-        /// </summary>
-        /// <param name="value">Integer to convert</param>
-        /// <returns>Array of bits (0 or 1), index 0 = LSB</returns>
-        private static int[] GetBinaryBits(BigInteger value)
-        {
-            if (value <= 0)
-            {
-                return new int[] { 0 };
-            }
-
-            // Use .NET 7+ GetBitLength() - more efficient than manual counting
-            int bitCount = (int)value.GetBitLength();
-
-            // Extract bits using TestBit (or bit shifting)
-            var bits = new int[bitCount];
-            for (int i = 0; i < bitCount; i++)
-            {
-                // Check if bit i is set (1 or 0)
-                bits[i] = (value & (BigInteger.One << i)) != 0 ? 1 : 0;
-            }
-
-            return bits;
         }
     }
 }
