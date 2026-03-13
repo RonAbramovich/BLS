@@ -79,5 +79,46 @@ namespace BLS.Fields.Implementations
             var y = BigInteger.ModPow(z, (p + 1) / 4, p);
             return y;
         }
+
+        /// <summary>
+        /// Computes modular multiplicative inverse using Fermat's Little Theorem.
+        /// For prime modulus p: a^(-1) ≡ a^(p-2) (mod p)
+        /// </summary>
+        /// <param name="value">The value to invert</param>
+        /// <param name="modulus">Prime modulus</param>
+        /// <returns>Modular inverse of value mod modulus</returns>
+        /// <exception cref="InvalidOperationException">If gcd(value, modulus) != 1</exception>
+        public static BigInteger ModularInverse(BigInteger value, BigInteger modulus)
+        {
+            value = ModNormalize(value, modulus);
+
+            if (BigInteger.GreatestCommonDivisor(value, modulus) != 1)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot compute modular inverse: gcd({value}, {modulus}) != 1");
+            }
+
+            // Fermat's Little Theorem: a^(-1) ≡ a^(p-2) (mod p) for prime p
+            return BigInteger.ModPow(value, modulus - 2, modulus);
+        }
+
+        /// <summary>
+        /// Performs modular division: (numerator / denominator) mod modulus
+        /// Equivalent to: (numerator * denominator^(-1)) mod modulus
+        /// </summary>
+        /// <param name="numerator">Numerator value</param>
+        /// <param name="denominator">Denominator value</param>
+        /// <param name="modulus">Prime modulus</param>
+        /// <returns>(numerator / denominator) mod modulus</returns>
+        public static BigInteger ModularDivide(BigInteger numerator, BigInteger denominator, BigInteger modulus)
+        {
+            numerator = ModNormalize(numerator, modulus);
+            denominator = ModNormalize(denominator, modulus);
+
+            BigInteger inverse = ModularInverse(denominator, modulus);
+            BigInteger result = (numerator * inverse) % modulus;
+
+            return ModNormalize(result, modulus);
+        }
     }
 }

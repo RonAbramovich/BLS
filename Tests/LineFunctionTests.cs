@@ -46,7 +46,7 @@ namespace BLS.Tests
             // We'll just check that line evaluation doesn't throw
 
             // Act: Evaluate tangent line at T, evaluated at a point
-            var result = LineFunction.EvaluateTangentLine(
+            var result = LineFunctionUtils.EvaluateTangentLine(
                 T,
                 extensionCurve.CreatePoint(Q_x, Q_y),
                 extensionField,
@@ -84,7 +84,7 @@ namespace BLS.Tests
                 extensionField.FromInt(1));
 
             // Act
-            var result = LineFunction.EvaluateTangentLine(
+            var result = LineFunctionUtils.EvaluateTangentLine(
                 T_infinity,
                 Q,
                 extensionField,
@@ -134,7 +134,7 @@ namespace BLS.Tests
                 extensionField.FromInt(1));
 
             // Act
-            var result = LineFunction.EvaluateChordLine(T, S, Q, extensionField);
+            var result = LineFunctionUtils.EvaluateChordLine(T, S, Q, extensionField);
 
             // Assert
             Assert.NotNull(result);
@@ -171,7 +171,7 @@ namespace BLS.Tests
                 extensionField.FromInt(1));
 
             // Act
-            var result = LineFunction.EvaluateChordLine(T, S, Q, extensionField);
+            var result = LineFunctionUtils.EvaluateChordLine(T, S, Q, extensionField);
 
             // Assert: Should handle vertical line case
             Assert.NotNull(result);
@@ -205,7 +205,7 @@ namespace BLS.Tests
                 extensionField.FromInt(1));
 
             // Act
-            var result = LineFunction.EvaluateChordLine(T_infinity, S, Q, extensionField);
+            var result = LineFunctionUtils.EvaluateChordLine(T_infinity, S, Q, extensionField);
 
             // Assert
             Assert.True(result.Equals(extensionField.One),
@@ -245,7 +245,7 @@ namespace BLS.Tests
                 extensionField.FromInt(5));
 
             // Should not throw - modular division should work
-            var result = LineFunction.EvaluateTangentLine(T, Q, extensionField, baseCurve.A);
+            var result = LineFunctionUtils.EvaluateTangentLine(T, Q, extensionField, baseCurve.A);
 
             Assert.NotNull(result);
         }
