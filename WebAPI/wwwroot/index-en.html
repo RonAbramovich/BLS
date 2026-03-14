@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLS Signature - Interactive Calculator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .language-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .language-switch a {
+            color: white;
+            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: background 0.3s;
+        }
+
+        .language-switch a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .input-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-section {
+            margin-top: 30px;
+        }
+
+        .step {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .step:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-right: 15px;
+        }
+
+        .step-title {
+            flex: 1;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .step-result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .final-result {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .final-result.failed {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+
+        .final-result h3 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #ffe0e0;
+            color: #cc0000;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="language-switch">
+        <a href="index.html">עברית</a>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Interactive BLS Signature</h1>
+            <p>Pairing-Based Cryptography on Elliptic Curves</p>
+        </div>
+
+        <div class="content">
+            <div class="input-section">
+                <h2>Input Parameters</h2>
+                
+                <div class="form-group">
+                    <label for="primeQ">Prime q (Field Characteristic):</label>
+                    <input type="text" id="primeQ" value="43" placeholder="e.g., 43">
+                    <small>Must be prime and q ≡ 3 (mod 4)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="paramA">Parameter A (for y² = x³ + Ax + B):</label>
+                    <input type="text" id="paramA" value="1" placeholder="e.g., 1">
+                </div>
+
+                <div class="form-group">
+                    <label for="paramB">Parameter B (for y² = x³ + Ax + B):</label>
+                    <input type="text" id="paramB" value="8" placeholder="e.g., 8">
+                    <small>Must satisfy: 4A³ + 27B² ≠ 0</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="privateKey">Private Key a:</label>
+                    <input type="text" id="privateKey" value="5" placeholder="e.g., 5">
+                    <small>Scalar for computing public key</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Message to Sign:</label>
+                    <input type="text" id="message" value="hello" placeholder="Enter any message">
+                </div>
+
+                <button class="btn" onclick="generateSignature()" id="submitBtn">
+                    Calculate Signature & Verify
+                </button>
+            </div>
+
+            <div id="loadingSection" class="hidden">
+                <div class="loader"></div>
+                <p style="text-align: center; color: #666;">Computing...</p>
+            </div>
+
+            <div id="errorSection" class="hidden error-message"></div>
+
+            <div id="resultsSection" class="results-section hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        async function generateSignature() {
+            const submitBtn = document.getElementById('submitBtn');
+            const loadingSection = document.getElementById('loadingSection');
+            const errorSection = document.getElementById('errorSection');
+            const resultsSection = document.getElementById('resultsSection');
+
+            // Clear previous results
+            resultsSection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+            resultsSection.innerHTML = '';
+
+            // Show loading
+            submitBtn.disabled = true;
+            loadingSection.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/bls/sign', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        q: document.getElementById('primeQ').value,
+                        a: document.getElementById('paramA').value,
+                        b: document.getElementById('paramB').value,
+                        privateKey: document.getElementById('privateKey').value,
+                        message: document.getElementById('message').value,
+                        language: 'en'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.errorMessage || 'Unknown error');
+                }
+
+                displayResults(data);
+            } catch (error) {
+                errorSection.textContent = `Error: ${error.message}`;
+                errorSection.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                loadingSection.classList.add('hidden');
+            }
+        }
+
+        function displayResults(data) {
+            const resultsSection = document.getElementById('resultsSection');
+            let html = '<h2 style="color: #667eea; margin-bottom: 20px;">Step-by-Step Calculation Results</h2>';
+
+            // Display each step
+            data.steps.forEach(step => {
+                html += `
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">${step.stepNumber}</div>
+                            <div class="step-title">${step.description}</div>
+                        </div>
+                        <div class="step-result">${step.result}</div>
+                    </div>
+                `;
+            });
+
+            // Display final result
+            const passedClass = data.verificationPassed ? '' : 'failed';
+            const statusText = data.verificationPassed ? 'Signature Valid!' : 'Signature Invalid!';
+            
+            html += `
+                <div class="final-result ${passedClass}">
+                    <h3>${statusText}</h3>
+                    <p style="margin-top: 15px; font-size: 1.1em;">
+                        ${data.verificationPassed ? 'Bob\'s verification matches Alice\'s signature' : 'Bob\'s verification does not match Alice\'s signature'}
+                    </p>
+                </div>
+            `;
+
+            resultsSection.innerHTML = html;
+            resultsSection.classList.remove('hidden');
+
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>חתימת BLS - מחשבון אינטראקטיבי</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .language-switch {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        .language-switch a {
+            color: white;
+            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: background 0.3s;
+        }
+
+        .language-switch a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .input-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-section {
+            margin-top: 30px;
+        }
+
+        .step {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .step:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .step-title {
+            flex: 1;
+            margin-right: 15px;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .step-result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #666;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .final-result {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .final-result.failed {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+
+        .final-result h3 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #ffe0e0;
+            color: #cc0000;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .detail-section {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .detail-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .detail-item {
+            margin-bottom: 12px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            color: #666;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .attempt {
+            background: #f1f3f5;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border-right: 3px solid #adb5bd;
+        }
+
+        .attempt.success {
+            border-right-color: #51cf66;
+            background: #d3f9d8;
+        }
+    </style>
+</head>
+<body>
+    <div class="language-switch">
+        <a href="index-en.html">English</a>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>חתימת BLS אינטראקטיבית</h1>
+            <p>מערכת להדגמת חתימה והצפנה מבוססת זיווג על עקומות אליפטיות</p>
+        </div>
+
+        <div class="content">
+            <div class="input-section">
+                <h2>פרמטרי קלט</h2>
+                
+                <div class="form-group">
+                    <label for="primeQ">מספר ראשוני q (מאפיין השדה):</label>
+                    <input type="text" id="primeQ" value="43" placeholder="לדוגמה: 43">
+                    <small>חייב להיות ראשוני ו q ≡ 3 (mod 4)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="paramA">פרמטר A (עבור y² = x³ + Ax + B):</label>
+                    <input type="text" id="paramA" value="1" placeholder="לדוגמה: 1">
+                </div>
+
+                <div class="form-group">
+                    <label for="paramB">פרמטר B (עבור y² = x³ + Ax + B):</label>
+                    <input type="text" id="paramB" value="8" placeholder="לדוגמה: 8">
+                    <small>חייב לקיים: 4A³ + 27B² ≠ 0</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="privateKey">מפתח פרטי a:</label>
+                    <input type="text" id="privateKey" value="5" placeholder="לדוגמה: 5">
+                    <small>סקלר עבור חישוב המפתח הציבורי</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">הודעה לחתימה:</label>
+                    <input type="text" id="message" value="שלום" placeholder="הקלד הודעה כלשהי">
+                </div>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="includeDetailedReport" checked style="width: auto; cursor: pointer;">
+                    <label for="includeDetailedReport" style="margin: 0; cursor: pointer;">הצג דוח מפורט של החישובים</label>
+                </div>
+
+                <button class="btn" onclick="generateSignature()" id="submitBtn">
+                    חשב חתימה ואמת
+                </button>
+            </div>
+
+            <div id="loadingSection" class="hidden">
+                <div class="loader"></div>
+                <p style="text-align: center; color: #666;">מבצע חישובים...</p>
+            </div>
+
+            <div id="errorSection" class="hidden error-message"></div>
+
+            <div id="resultsSection" class="results-section hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        async function generateSignature() {
+            const submitBtn = document.getElementById('submitBtn');
+            const loadingSection = document.getElementById('loadingSection');
+            const errorSection = document.getElementById('errorSection');
+            const resultsSection = document.getElementById('resultsSection');
+
+            // Clear previous results
+            resultsSection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+            resultsSection.innerHTML = '';
+
+            // Show loading
+            submitBtn.disabled = true;
+            loadingSection.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/bls/sign', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        q: document.getElementById('primeQ').value,
+                        a: document.getElementById('paramA').value,
+                        b: document.getElementById('paramB').value,
+                        privateKey: document.getElementById('privateKey').value,
+                        message: document.getElementById('message').value,
+                        language: 'he',
+                        includeDetailedReport: document.getElementById('includeDetailedReport').checked
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.errorMessage || 'שגיאה לא ידועה');
+                }
+
+                displayResults(data);
+            } catch (error) {
+                errorSection.textContent = `שגיאה: ${error.message}`;
+                errorSection.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                loadingSection.classList.add('hidden');
+            }
+        }
+
+        function displayResults(data) {
+            const resultsSection = document.getElementById('resultsSection');
+            let html = '<h2 style="color: #667eea; margin-bottom: 20px;">תוצאות חישוב</h2>';
+
+            // Add tabs if detailed report exists
+            if (data.detailedReport) {
+                html += `
+                    <div class="tabs">
+                        <button class="tab active" onclick="switchTab(event, 'steps')">צעדי חישוב</button>
+                        <button class="tab" onclick="switchTab(event, 'detailed')">דוח מפורט</button>
+                        <button class="tab" onclick="switchTab(event, 'summary')">סיכום</button>
+                    </div>
+                `;
+            }
+
+            // Steps tab
+            html += '<div id="steps-content" class="tab-content active">';
+            html += '<h3 style="color: #667eea; margin-bottom: 20px;">צעדי חישוב צעד אחר צעד</h3>';
+
+            // Display each step
+            data.steps.forEach(step => {
+                html += `
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">${step.stepNumber}</div>
+                            <div class="step-title">${step.description}</div>
+                        </div>
+                        <div class="step-result">${step.result}</div>
+                    </div>
+                `;
+            });
+
+            // Display final result
+            const passedClass = data.verificationPassed ? '' : 'failed';
+            const statusText = data.verificationPassed ? 'החתימה תקינה!' : 'החתימה לא תקינה!';
+
+            html += `
+                <div class="final-result ${passedClass}">
+                    <h3>${statusText}</h3>
+                    <p style="margin-top: 15px; font-size: 1.1em;">
+                        ${data.verificationPassed ? 'אימות בוב תואם לחתימת אליס' : 'אימות בוב לא תואם לחתימת אליס'}
+                    </p>
+                </div>
+            `;
+            html += '</div>';
+
+            // Detailed report tab
+            if (data.detailedReport) {
+                html += '<div id="detailed-content" class="tab-content">';
+                html += generateDetailedReport(data.detailedReport);
+                html += '</div>';
+
+                // Summary tab
+                html += '<div id="summary-content" class="tab-content">';
+                html += generateSummary(data);
+                html += '</div>';
+            }
+
+            resultsSection.innerHTML = html;
+            resultsSection.classList.remove('hidden');
+
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function switchTab(event, tabName) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName + '-content').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function generateDetailedReport(report) {
+            let html = '';
+
+            // Step 3: Message Hashing
+            if (report.messageHashingDetails) {
+                const step3 = report.messageHashingDetails;
+                html += `
+                    <div class="detail-section">
+                        <h3>שלב 3: הגבר הודעה לנקודה על העקום</h3>
+                        <div class="detail-item">
+                            <div class="detail-label">הודעה מקורית:</div>
+                            <div class="detail-value">${step3.originalMessage}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">קידוד נעשה:</div>
+                            <div class="detail-value">${step3.encodingUsed}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">בתים (Hex):</div>
+                            <div class="detail-value">${step3.messageBytesHex}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">מספר שלם מקודד (mod p):</div>
+                            <div class="detail-value">${step3.encodedInteger}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">קופקטור שנוצל:</div>
+                            <div class="detail-value">${step3.cofactorUsed}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">ניסיונות עד הצלחה:</div>
+                            <div class="detail-value">${step3.trialsUntilSuccess}</div>
+                        </div>
+                        <h4 style="margin: 20px 0 10px 0;">ניסיונות גיבוב:</h4>
+                `;
+
+                step3.attempts.slice(0, 20).forEach(attempt => {
+                    const attemptClass = attempt.isQuadraticResidue ? 'success' : '';
+                    html += `
+                        <div class="attempt ${attemptClass}">
+                            <strong>הגדלה ${attempt.increment}:</strong> x = ${attempt.candidateX}<br>
+                            z = x³ + Ax + B = ${attempt.computedZ}<br>
+                            ${attempt.isQuadraticResidue ? 
+                                `✅ שארית ריבועית! y = ${attempt.squareRootY}` : 
+                                '❌ לא שארית ריבועית'}
+                        </div>
+                    `;
+                });
+
+                if (step3.attempts.length > 20) {
+                    html += `<p style="margin-top: 10px; color: #666;"><em>מציג ${20} ניסיונות ראשונים מתוך ${step3.attempts.length}...</em></p>`;
+                }
+
+                html += `
+                        <div class="detail-item" style="margin-top: 20px; background: #d3f9d8;">
+                            <div class="detail-label">✅ נקודה סופית (אחרי מחיקת קופקטור):</div>
+                            <div class="detail-value">P = (${step3.finalPointX}, ${step3.finalPointY})</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Step 7: Torsion Point
+            if (report.torsionPointDetails) {
+                const step7 = report.torsionPointDetails;
+                html += `
+                    <div class="detail-section">
+                        <h3>שלב 7: מצא נקודת פיתול Q</h3>
+                        <div class="detail-item">
+                            <div class="detail-label">סדר יעד (r):</div>
+                            <div class="detail-value">${step7.targetOrder}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">שדה הרחבה:</div>
+                            <div class="detail-value">F_${step7.extensionFieldSize}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">מכפיל קופקטור:</div>
+                            <div class="detail-value">${step7.cofactorMultiplier}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">בלתי תלויה לינארית:</div>
+                            <div class="detail-value">${step7.isLinearlyIndependent ? '✅ כן' : '❌ לא'}</div>
+                        </div>
+                        <div class="detail-item" style="background: #d3f9d8;">
+                            <div class="detail-label">✅ נקודת פיתול סופית Q:</div>
+                            <div class="detail-value">
+                                X (תואר ${step7.pointX_Degree}): ${step7.finalPointX_Polynomial}<br>
+                                Y (תואר ${step7.pointY_Degree}): ${step7.finalPointY_Polynomial}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Step 8: Signature Calculation
+            if (report.signatureCalculationDetails) {
+                const step8 = report.signatureCalculationDetails;
+                html += `
+                    <div class="detail-section">
+                        <h3>שלב 8: חישוב חתימת אליס</h3>
+                        <div class="detail-item">
+                            <div class="detail-label">מפתח פרטי (a):</div>
+                            <div class="detail-value">${step8.privateKey}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">נקודת גיבוב ההודעה P = H(m):</div>
+                            <div class="detail-value">(${step8.messageHashPoint_X}, ${step8.messageHashPoint_Y})</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">כפל סקלרי a·P:</div>
+                            <div class="detail-value">(${step8.multipliedPoint_X}, ${step8.multipliedPoint_Y})</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">נקודת פיתול Q:</div>
+                            <div class="detail-value">
+                                X: ${step8.torsionPoint_X}<br>
+                                Y: ${step8.torsionPoint_Y}
+                            </div>
+                        </div>
+                        <div class="detail-item" style="background: #d3f9d8;">
+                            <div class="detail-label">✅ חתימה = e_r(a·H(m), Q):</div>
+                            <div class="detail-value">${step8.finalSignature}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Step 9: Verification Calculation
+            if (report.verificationCalculationDetails) {
+                const step9 = report.verificationCalculationDetails;
+                html += `
+                    <div class="detail-section">
+                        <h3>שלב 9: חישוב אימות של בוב</h3>
+                        <div class="detail-item">
+                            <div class="detail-label">מפתח פרטי (a):</div>
+                            <div class="detail-value">${step9.privateKey}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">נקודת גיבוב ההודעה P = H(m):</div>
+                            <div class="detail-value">(${step9.messageHashPoint_X}, ${step9.messageHashPoint_Y})</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">נקודת פיתול Q:</div>
+                            <div class="detail-value">
+                                X: ${step9.torsionPoint_X}<br>
+                                Y: ${step9.torsionPoint_Y}
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">כפל סקלרי a·Q:</div>
+                            <div class="detail-value">(${step9.multipliedPoint_X}, ${step9.multipliedPoint_Y})</div>
+                        </div>
+                        <div class="detail-item" style="background: #d3f9d8;">
+                            <div class="detail-label">✅ אימות = e_r(H(m), a·Q):</div>
+                            <div class="detail-value">${step9.finalVerification}</div>
+                        </div>
+                        <div class="detail-item" style="background: ${step9.signatureMatches ? '#d3f9d8' : '#f8d7da'};">
+                            <div class="detail-label">התאמת חתימה:</div>
+                            <div class="detail-value">${step9.signatureMatches ? '✅ מְאוּמָת' : '❌ נכשל'}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return html;
+        }
+
+        function generateSummary(data) {
+            return `
+                <div class="detail-section">
+                    <h3>סיכום חתימה</h3>
+                    <div class="detail-item">
+                        <div class="detail-label">חתימת אליס:</div>
+                        <div class="detail-value">${data.aliceSignature}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">אימות של בוב:</div>
+                        <div class="detail-value">${data.bobVerification}</div>
+                    </div>
+                    <div class="detail-item" style="background: ${data.verificationPassed ? '#d3f9d8' : '#f8d7da'};">
+                        <div class="detail-label">מצב אימות:</div>
+                        <div class="detail-value">${data.verificationPassed ? '✅ עבר' : '❌ נכשל'}</div>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
