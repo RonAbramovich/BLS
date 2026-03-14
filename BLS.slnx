@@ -2,5 +2,8 @@
   <Folder Name="/Tests/">
     <Project Path="Tests/BLS.Tests.csproj" />
   </Folder>
+  <Folder Name="/WebAPI/">
+    <Project Path="WebAPI/BLS.WebAPI.csproj" />
+  </Folder>
   <Project Path="BLS.csproj" />
 </Solution>

@@ -1,18 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-  </ItemGroup>
   <ItemGroup>
     <!-- Exclude test sources from the main project so the Tests folder is built only by the test project -->
     <Compile Remove="Tests\**\*.cs" />
     <None Remove="Tests\**\*" />
+    <!-- Exclude WebAPI files -->
+    <Compile Remove="WebAPI\**\*.cs" />
+    <None Remove="WebAPI\**\*" />
+    <!-- Exclude ConsoleApp files -->
+    <Compile Remove="ConsoleApp\**\*.cs" />
+    <None Remove="ConsoleApp\**\*" />
+    <!-- Exclude the root Program.cs as this is now a library -->
+    <Compile Remove="Program.cs" />
   </ItemGroup>
 
 </Project>
