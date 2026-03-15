@@ -12,7 +12,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddOpenApi();
+builder.Services.AddSwaggerGen();
 
 // Configure CORS to allow the frontend
 builder.Services.AddCors(options =>
@@ -30,10 +30,10 @@ var app = builder.Build();
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/openapi/v1.json", "BLS Signature API v1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "BLS Signature API v1");
         c.RoutePrefix = "swagger";
     });
 }

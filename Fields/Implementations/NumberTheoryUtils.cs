@@ -91,10 +91,8 @@ namespace BLS.Fields.Implementations
             return res;
         }
 
-        /// <summary>
-        /// Compute modular square root for primes p where p % 4 == 3 using exponentiation shortcut.
-        /// Returns -1 when no square root exists. Assumes p is an odd prime and p % 4 == 3.
-        /// </summary>
+        // Compute modular square root for primes p where p % 4 == 3 using exponentiation shortcut.
+        // Returns -1 when no square root exists. Assumes p is an odd prime and p % 4 == 3.
         public static BigInteger SqrtModP(BigInteger z, BigInteger p)
         {
             z = ModNormalize(z, p);
@@ -146,10 +144,8 @@ namespace BLS.Fields.Implementations
             return ModNormalize(result, modulus);
         }
 
-        /// <summary>
         /// Converts a BigInteger to its binary representation as a bit array.
         /// Returns bits array s.t index 0 = LSB.
-        /// </summary>
         public static int[] GetBinaryBits(BigInteger value)
         {
             if (value <= 0)
@@ -169,172 +165,10 @@ namespace BLS.Fields.Implementations
         }
 
         /// <summary>
-        /// Computes square root of element 'a' in extension field F_q^k using Tonelli-Shanks algorithm.
-        /// Returns null if 'a' is not a quadratic residue.
-        /// This is the extension field analogue of SqrtModP for base fields.
-        /// </summary>
-        /// <param name="a">Element to find square root of</param>
-        /// <param name="field">The extension field F_q^k</param>
-        /// <param name="random">Random number generator for finding non-residues (used only when q^k ≡ 1 mod 4)</param>
-        /// <returns>Square root of 'a' if it exists, null otherwise</returns>
-        public static ExtensionFieldElement? SqrtModExtensionField(
-            ExtensionFieldElement a,
-            ExtensionField field,
-            Random random)
-        {
-            ArgumentNullException.ThrowIfNull(a);
-            ArgumentNullException.ThrowIfNull(field);
-            ArgumentNullException.ThrowIfNull(random);
-
-            if (a.IsZero)
-            {
-                return field.Zero;
-            }
-
-            BigInteger q = field.BaseField.Characteristic;
-            int k = field.ExtensionDegree;
-            BigInteger fieldSize = BigInteger.Pow(q, k);
-
-            // Check if 'a' is a quadratic residue using Legendre symbol: a^((q^k - 1)/2) == 1
-            BigInteger legendreExp = (fieldSize - 1) / 2;
-            var legendre = a.Power(legendreExp);
-            if (!legendre.Equals(field.One))
-            {
-                return null; // Not a quadratic residue
-            }
-
-            // Special case: q^k ≡ 3 (mod 4) - simple formula
-            // sqrt(a) = a^((q^k + 1)/4)
-            if (fieldSize % 4 == 3)
-            {
-                BigInteger exp = (fieldSize + 1) / 4;
-                return a.Power(exp);
-            }
-
-            // General case: Tonelli-Shanks algorithm for q^k ≡ 1 (mod 4)
-            // Write q^k - 1 = 2^s * t with t odd
-            BigInteger qkMinus1 = fieldSize - 1;
-            int s = 0;
-            BigInteger t = qkMinus1;
-            while (t % 2 == 0)
-            {
-                s++;
-                t /= 2;
-            }
-
-            // Find a quadratic non-residue n
-            var n = FindQuadraticNonResidue(field, random);
-            if (n == null)
-            {
-                return null; // Failed to find non-residue (very unlikely)
-            }
-
-            // Tonelli-Shanks initialization
-            var c = n.Power(t);              // c = n^t
-            var r = a.Power((t + 1) / 2);    // r = a^((t+1)/2)
-            var tt = a.Power(t);             // tt = a^t
-            int m = s;
-
-            // Tonelli-Shanks main loop
-            while (!tt.Equals(field.One))
-            {
-                // Find the least i such that tt^(2^i) = 1
-                int i = 1;
-                var temp = tt;
-                while (i < m)
-                {
-                    temp = temp.Multiply(temp);
-                    if (temp.Equals(field.One))
-                    {
-                        break;
-                    }
-                    i++;
-                }
-
-                if (i >= m)
-                {
-                    return null; // Algorithm failed (should not happen if a is a QR)
-                }
-
-                // Update values
-                var b = c;
-                for (int j = 0; j < m - i - 1; j++)
-                {
-                    b = b.Multiply(b);
-                }
-
-                r = r.Multiply(b);      // r = r * b
-                c = b.Multiply(b);      // c = b^2
-                tt = tt.Multiply(c);    // tt = tt * c
-                m = i;
-            }
-
-            return r;
-        }
-
-        /// <summary>
-        /// Finds a quadratic non-residue in the extension field F_q^k by random search.
-        /// A quadratic non-residue 'a' satisfies: a^((q^k - 1)/2) ≠ 1 (mod irreducible polynomial).
-        /// Used in Tonelli-Shanks algorithm for finding square roots in extension fields.
-        /// </summary>
-        /// <param name="field">The extension field F_q^k</param>
-        /// <param name="random">Random number generator for candidate selection</param>
-        /// <param name="maxAttempts">Maximum number of random attempts (default 100)</param>
-        /// <returns>A quadratic non-residue element, or null if not found within maxAttempts</returns>
-        public static ExtensionFieldElement? FindQuadraticNonResidue(
-            ExtensionField field, 
-            Random random, 
-            int maxAttempts = 100)
-        {
-            ArgumentNullException.ThrowIfNull(field);
-            ArgumentNullException.ThrowIfNull(random);
-
-            BigInteger q = field.BaseField.Characteristic;
-            int k = field.ExtensionDegree;
-            BigInteger fieldSize = BigInteger.Pow(q, k);
-            BigInteger legendreExp = (fieldSize - 1) / 2;
-
-            for (int attempt = 0; attempt < maxAttempts; attempt++)
-            {
-                // Generate random coefficients for polynomial
-                var coeffs = new BigInteger[k];
-                for (int i = 0; i < k; i++)
-                {
-                    coeffs[i] = RandomBigInteger(random, q);
-                }
-
-                var candidatePoly = new Polynomial(q, coeffs);
-                var candidate = new ExtensionFieldElement(field, candidatePoly);
-
-                if (!candidate.IsZero)
-                {
-                    // Check Legendre symbol: candidate^((q^k - 1)/2)
-                    var legendre = candidate.Power(legendreExp);
-                    if (!legendre.Equals(field.One))
-                    {
-                        return candidate; // Found a non-residue
-                    }
-                }
-            }
-
-            return null; // Failed to find non-residue within maxAttempts
-        }
-
-        /// <summary>
         /// Generates a random BigInteger in the range [0, max).
         /// </summary>
-        /// <param name="random">Random number generator</param>
-        /// <param name="max">Exclusive upper bound</param>
-        /// <returns>Random BigInteger in [0, max)</returns>
         public static BigInteger RandomBigInteger(Random random, BigInteger max)
         {
-            ArgumentNullException.ThrowIfNull(random);
-
-            if (max <= 0)
-            {
-                throw new ArgumentException("Max must be positive", nameof(max));
-            }
-
             if (max <= int.MaxValue)
             {
                 return random.Next((int)max);
@@ -351,6 +185,139 @@ namespace BLS.Fields.Implementations
             } while (result >= max);
 
             return result;
+        }
+
+        /// <summary>
+        /// Attempts to find square root of an element in extension field using Tonelli-Shanks algorithm.
+        /// Returns null if no square root exists.
+        /// </summary>
+        public static ExtensionFieldElement? SqrtModExtensionField(ExtensionFieldElement a, ExtensionField field, Random random)
+        {
+            BigInteger q = field.BaseField.Characteristic;
+            int k = field.ExtensionDegree;
+            BigInteger qk = BigInteger.Pow(q, k);
+
+            // For fields where q^k ≡ 3 (mod 4), use the simple formula
+            if (qk % 4 == 3)
+            {
+                BigInteger exponent = (qk + 1) / 4;
+                var candidate = a.Power(exponent);
+
+                // Verify candidate² = a
+                var squared = candidate.Multiply(candidate);
+                if (squared.Equals(a))
+                {
+                    return candidate;
+                }
+                return null;
+            }
+
+            // For other cases, use Tonelli-Shanks algorithm
+            return TonelliShanksExtensionField(a, field, random);
+        }
+
+        /// <summary>
+        /// Tonelli-Shanks algorithm for finding square roots in extension fields.
+        /// </summary>
+        private static ExtensionFieldElement? TonelliShanksExtensionField(ExtensionFieldElement a, ExtensionField field, Random random)
+        {
+            BigInteger q = field.BaseField.Characteristic;
+            int k = field.ExtensionDegree;
+            BigInteger qk = BigInteger.Pow(q, k);
+
+            // Check if a is a quadratic residue
+            BigInteger legendreExp = (qk - 1) / 2;
+            var legendre = a.Power(legendreExp);
+
+            if (!legendre.Equals(field.One))
+            {
+                return null; // Not a quadratic residue
+            }
+
+            // Find Q and S such that qk - 1 = Q * 2^S with Q odd
+            BigInteger Q = qk - 1;
+            int S = 0;
+            while (Q % 2 == 0)
+            {
+                Q /= 2;
+                S++;
+            }
+
+            // Find a quadratic non-residue
+            ExtensionFieldElement z = FindQuadraticNonResidue(field, random);
+
+            // Initialize
+            BigInteger M = S;
+            var c = z.Power(Q);
+            var t = a.Power(Q);
+            var R = a.Power((Q + 1) / 2);
+
+            while (!t.Equals(field.One))
+            {
+                // Find the least i such that t^(2^i) = 1
+                int i = 1;
+                var temp = t;
+                for (; i < M; i++)
+                {
+                    temp = temp.Multiply(temp);
+                    if (temp.Equals(field.One))
+                        break;
+                }
+
+                if (i >= M)
+                {
+                    return null; // Should not happen if a is QR
+                }
+
+                // Update values
+                var b = c;
+                for (int j = 0; j < M - i - 1; j++)
+                {
+                    b = b.Multiply(b);
+                }
+
+                M = i;
+                c = b.Multiply(b);
+                t = t.Multiply(c);
+                R = R.Multiply(b);
+            }
+
+            return R;
+        }
+
+        /// <summary>
+        /// Finds a quadratic non-residue in the extension field.
+        /// </summary>
+        private static ExtensionFieldElement FindQuadraticNonResidue(ExtensionField field, Random random)
+        {
+            BigInteger q = field.BaseField.Characteristic;
+            int k = field.ExtensionDegree;
+            BigInteger qk = BigInteger.Pow(q, k);
+            BigInteger legendreExp = (qk - 1) / 2;
+
+            // Try random elements until we find a non-residue
+            for (int attempt = 0; attempt < 1000; attempt++)
+            {
+                var coeffs = new BigInteger[k];
+                for (int i = 0; i < k; i++)
+                {
+                    coeffs[i] = RandomBigInteger(random, q);
+                }
+
+                var poly = new Polynomial(q, coeffs);
+                var candidate = new ExtensionFieldElement(field, poly);
+
+                if (candidate.IsZero)
+                    continue;
+
+                var legendre = candidate.Power(legendreExp);
+                if (!legendre.Equals(field.One))
+                {
+                    return candidate;
+                }
+            }
+
+            throw new InvalidOperationException("Failed to find quadratic non-residue in extension field");
         }
     }
 }

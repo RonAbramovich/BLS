@@ -248,9 +248,10 @@
         </div>
 
         <div class="content">
+            <!-- STEP 1: Curve Parameters -->
             <div class="input-section">
-                <h2>Input Parameters</h2>
-                
+                <h2>Step 1: Select Curve Parameters</h2>
+
                 <div class="form-group">
                     <label for="primeQ">Prime q (Field Characteristic):</label>
                     <input type="text" id="primeQ" value="43" placeholder="e.g., 43">
@@ -268,18 +269,10 @@
                     <small>Must satisfy: 4A³ + 27B² ≠ 0</small>
                 </div>
 
-                <div class="form-group">
-                    <label for="privateKey">Private Key a:</label>
-                    <input type="text" id="privateKey" value="5" placeholder="e.g., 5">
-                    <small>Scalar for computing public key</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="message">Message to Sign:</label>
-                    <input type="text" id="message" value="hello" placeholder="Enter any message">
-                </div>
-
-                <button class="btn" onclick="generateSignature()" id="submitBtn">
+                <button class="btn" onclick="showPrivateKeyConstraints()" id="validateBtn">
+                    Validate Parameters & Show Private Key Constraints
+                </button>
+            </div>
                     Calculate Signature & Verify
                 </button>
             </div>
@@ -291,11 +284,222 @@
 
             <div id="errorSection" class="hidden error-message"></div>
 
+            <div id="constraintsSection" class="results-section hidden"></div>
+
+            <!-- STEP 3: Private Key Selection & Signature -->
+            <div id="signatureSection" class="input-section hidden" style="margin-top: 20px;">
+                <h2>Step 3: Select Private Key and Compute Signature</h2>
+
+                <div class="form-group">
+                    <label>Private Key Input Mode:</label>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: inline-flex; align-items: center; margin-right: 20px; cursor: pointer;">
+                            <input type="radio" name="keyInputMode" value="select" checked onchange="onKeyInputModeChange()" style="width: auto; margin-right: 8px;">
+                            Select from valid keys
+                        </label>
+                        <label style="display: inline-flex; align-items: center; cursor: pointer;">
+                            <input type="radio" name="keyInputMode" value="manual" onchange="onKeyInputModeChange()" style="width: auto; margin-right: 8px;">
+                            Enter manually
+                        </label>
+                    </div>
+                </div>
+
+                <div id="selectKeyMode" class="form-group">
+                    <label for="privateKeySelect">Select Valid Private Key:</label>
+                    <select id="privateKeySelect" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
+                        <option value="">-- Select valid private key --</option>
+                    </select>
+                </div>
+
+                <div id="manualKeyMode" class="form-group hidden">
+                    <label for="privateKeyManual">Enter Private Key:</label>
+                    <input type="text" id="privateKeyManual" placeholder="e.g., 5">
+                    <small>Ensure the key is valid (sk > 0 and sk mod r ≠ 0)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Message to Sign:</label>
+                    <input type="text" id="message" value="hello" placeholder="Enter any message">
+                </div>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="includeDetailedReport" checked style="width: auto; cursor: pointer;">
+                    <label for="includeDetailedReport" style="margin: 0; cursor: pointer;">Show detailed calculation report</label>
+                </div>
+
+                <button class="btn" onclick="generateSignature()" id="submitBtn">
+                    Calculate Signature & Verify
+                </button>
+            </div>
+
             <div id="resultsSection" class="results-section hidden"></div>
         </div>
     </div>
 
     <script>
+        async function showPrivateKeyConstraints() {
+            const validateBtn = document.getElementById('validateBtn');
+            const loadingSection = document.getElementById('loadingSection');
+            const errorSection = document.getElementById('errorSection');
+            const constraintsSection = document.getElementById('constraintsSection');
+
+            // Clear previous results
+            constraintsSection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+            constraintsSection.innerHTML = '';
+
+            // Show loading
+            validateBtn.disabled = true;
+            loadingSection.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/aggregated/private-key-constraints', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        PRIME_Q: document.getElementById('primeQ').value,
+                        A: document.getElementById('paramA').value,
+                        B: document.getElementById('paramB').value,
+                        Language: 'en'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.errorMessage || 'Unknown error');
+                }
+
+                displayConstraints(data);
+            } catch (error) {
+                errorSection.textContent = `Error: ${error.message}`;
+                errorSection.classList.remove('hidden');
+            } finally {
+                validateBtn.disabled = false;
+                loadingSection.classList.add('hidden');
+            }
+        }
+
+        function displayConstraints(data) {
+            const constraintsSection = document.getElementById('constraintsSection');
+            let html = '<h2 style="color: #667eea; margin-bottom: 20px;">Step 2: Private Key Constraints</h2>';
+
+            html += `
+                <div class="detail-section">
+                    <h3>Curve Details</h3>
+                    <div class="detail-item">
+                        <div class="detail-label">Prime (p):</div>
+                        <div class="detail-value">${data.prime}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Curve Equation:</div>
+                        <div class="detail-value">${data.curveEquation}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Group Order:</div>
+                        <div class="detail-value">${data.groupOrder}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Generator Order (r):</div>
+                        <div class="detail-value">${data.r}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Generator Point:</div>
+                        <div class="detail-value">${data.generatorPoint}</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>${data.constraintDescription}</h3>
+                    <div class="detail-item">
+                        <div class="detail-label">Validation Rule:</div>
+                        <div class="detail-value" style="white-space: pre-wrap;">${data.validationRule}</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Detailed Explanation</h3>
+                    <div class="detail-item">
+                        <div class="detail-value" style="white-space: pre-wrap;">${data.explanation}</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 style="color: #51cf66;">✓ Valid Private Key Examples</h3>
+            `;
+
+            data.validKeyExamples.forEach(key => {
+                html += `
+                    <div class="detail-item" style="background: #d3f9d8;">
+                        <div class="detail-value" style="color: #2b8a3e; font-weight: bold;">sk = ${key}</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                </div>
+
+                <div class="detail-section">
+                    <h3 style="color: #f03e3e;">✗ Invalid Private Key Examples</h3>
+            `;
+
+            data.invalidKeyExamples.forEach(key => {
+                html += `
+                    <div class="detail-item" style="background: #ffe0e0;">
+                        <div class="detail-value" style="color: #c92a2a; font-weight: bold;">sk = ${key}</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                </div>
+            `;
+
+            constraintsSection.innerHTML = html;
+            constraintsSection.classList.remove('hidden');
+
+            // Show Step 3 section
+            document.getElementById('signatureSection').classList.remove('hidden');
+
+            // Populate the valid keys dropdown
+            const keySelect = document.getElementById('privateKeySelect');
+            keySelect.innerHTML = '<option value="">-- Select valid private key --</option>';
+            data.validKeyExamples.forEach(key => {
+                keySelect.innerHTML += `<option value="${key}">${key}</option>`;
+            });
+
+            // Store valid keys for validation
+            window.validPrivateKeys = data.validKeyExamples;
+
+            // Scroll to constraints
+            constraintsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function onKeyInputModeChange() {
+            const mode = document.querySelector('input[name="keyInputMode"]:checked').value;
+            const selectMode = document.getElementById('selectKeyMode');
+            const manualMode = document.getElementById('manualKeyMode');
+
+            if (mode === 'select') {
+                selectMode.classList.remove('hidden');
+                manualMode.classList.add('hidden');
+            } else {
+                selectMode.classList.add('hidden');
+                manualMode.classList.remove('hidden');
+            }
+        }
+
+        function getSelectedPrivateKey() {
+            const mode = document.querySelector('input[name="keyInputMode"]:checked').value;
+            if (mode === 'select') {
+                return document.getElementById('privateKeySelect').value;
+            } else {
+                return document.getElementById('privateKeyManual').value;
+            }
+        }
+
         async function generateSignature() {
             const submitBtn = document.getElementById('submitBtn');
             const loadingSection = document.getElementById('loadingSection');
@@ -321,7 +525,7 @@
                         q: document.getElementById('primeQ').value,
                         a: document.getElementById('paramA').value,
                         b: document.getElementById('paramB').value,
-                        privateKey: document.getElementById('privateKey').value,
+                        privateKey: getSelectedPrivateKey(),
                         message: document.getElementById('message').value,
                         language: 'en'
                     })

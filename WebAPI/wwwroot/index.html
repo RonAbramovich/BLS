@@ -337,8 +337,9 @@
         </div>
 
         <div class="content">
+            <!-- STEP 1: Curve Parameters -->
             <div class="input-section">
-                <h2>פרמטרי עקום והודעה</h2>
+                <h2>שלב 1: בחר פרמטרי עקומה</h2>
 
                 <div class="form-group">
                     <label for="primeQ">מספר ראשוני q (מאפיין השדה):</label>
@@ -357,27 +358,54 @@
                     <small>חייב לקיים: 4A³ + 27B² ≠ 0</small>
                 </div>
 
-                <div class="form-group">
-                    <label for="message">הודעה לחתימה:</label>
-                    <input type="text" id="message" value="שלום" placeholder="הקלד הודעה כלשהי">
-                </div>
-
-                <button class="btn" onclick="validateBLSParameters()" id="validateBLSBtn">
+                <button class="btn" onclick="showPrivateKeyConstraints()" id="validateBtn">
                     אמת פרמטרים והצג אילוצי מפתח פרטי
                 </button>
             </div>
 
-            <!-- Validation Results Section (Hidden Initially) -->
-            <div id="blsValidationResults" class="hidden"></div>
+            <div id="loadingSection" class="hidden">
+                <div class="loader"></div>
+                <p style="text-align: center; color: #666;">מבצע חישובים...</p>
+            </div>
 
-            <!-- Private Key Selection Section (Hidden Initially) -->
-            <div id="blsPrivateKeySection" class="input-section hidden">
-                <h2>בחירת מפתח פרטי</h2>
+            <div id="errorSection" class="hidden error-message"></div>
+
+            <div id="constraintsSection" class="results-section hidden"></div>
+
+            <!-- STEP 3: Private Key Selection & Signature -->
+            <div id="signatureSection" class="input-section hidden" style="margin-top: 20px;">
+                <h2>שלב 3: בחר מפתח פרטי וחשב חתימה</h2>
 
                 <div class="form-group">
-                    <label for="privateKey">מפתח פרטי a:</label>
-                    <input type="text" id="privateKey" value="5" placeholder="לדוגמה: 5">
-                    <small>סקלר עבור חישוב המפתח הציבורי</small>
+                    <label>אופן בחירת מפתח פרטי:</label>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: inline-flex; align-items: center; margin-left: 20px; cursor: pointer;">
+                            <input type="radio" name="keyInputMode" value="select" checked onchange="onKeyInputModeChange()" style="width: auto; margin-left: 8px;">
+                            בחר מרשימת מפתחות תקינים
+                        </label>
+                        <label style="display: inline-flex; align-items: center; cursor: pointer;">
+                            <input type="radio" name="keyInputMode" value="manual" onchange="onKeyInputModeChange()" style="width: auto; margin-left: 8px;">
+                            הזן מפתח ידנית
+                        </label>
+                    </div>
+                </div>
+
+                <div id="selectKeyMode" class="form-group">
+                    <label for="privateKeySelect">בחר מפתח פרטי תקין:</label>
+                    <select id="privateKeySelect" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
+                        <option value="">-- בחר מפתח פרטי תקין --</option>
+                    </select>
+                </div>
+
+                <div id="manualKeyMode" class="form-group hidden">
+                    <label for="privateKeyManual">הזן מפתח פרטי:</label>
+                    <input type="text" id="privateKeyManual" placeholder="לדוגמה: 5">
+                    <small>ודא שהמפתח תקין (sk > 0 ו- sk mod r ≠ 0)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">הודעה לחתימה:</label>
+                    <input type="text" id="message" value="שלום" placeholder="הקלד הודעה כלשהי">
                 </div>
 
                 <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
@@ -390,36 +418,28 @@
                 </button>
             </div>
 
-            <div id="loadingSection" class="hidden">
-                <div class="loader"></div>
-                <p style="text-align: center; color: #666;">מבצע חישובים...</p>
-            </div>
-
-            <div id="errorSection" class="hidden error-message"></div>
-
             <div id="resultsSection" class="results-section hidden"></div>
         </div>
     </div>
 
     <script>
-        async function validateBLSParameters() {
-            const validateBtn = document.getElementById('validateBLSBtn');
-            const validationResults = document.getElementById('blsValidationResults');
-            const privateKeySection = document.getElementById('blsPrivateKeySection');
+        async function showPrivateKeyConstraints() {
+            const validateBtn = document.getElementById('validateBtn');
+            const loadingSection = document.getElementById('loadingSection');
             const errorSection = document.getElementById('errorSection');
+            const constraintsSection = document.getElementById('constraintsSection');
 
             // Clear previous results
-            validationResults.classList.add('hidden');
-            privateKeySection.classList.add('hidden');
+            constraintsSection.classList.add('hidden');
             errorSection.classList.add('hidden');
-            validationResults.innerHTML = '';
+            constraintsSection.innerHTML = '';
 
-            // Disable button
+            // Show loading
             validateBtn.disabled = true;
-            validateBtn.textContent = 'מאמת...';
+            loadingSection.classList.remove('hidden');
 
             try {
-                const response = await fetch('/api/bls/validate-parameters', {
+                const response = await fetch('/api/aggregated/private-key-constraints', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -438,86 +458,132 @@
                     throw new Error(data.errorMessage || 'שגיאה לא ידועה');
                 }
 
-                displayBLSValidationResults(data);
-
-                // Show private key section
-                privateKeySection.classList.remove('hidden');
-                privateKeySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
+                displayConstraints(data);
             } catch (error) {
                 errorSection.textContent = `שגיאה: ${error.message}`;
                 errorSection.classList.remove('hidden');
             } finally {
                 validateBtn.disabled = false;
-                validateBtn.textContent = 'אמת פרמטרים והצג אילוצי מפתח פרטי';
+                loadingSection.classList.add('hidden');
             }
         }
 
-        function displayBLSValidationResults(data) {
-            const validationResults = document.getElementById('blsValidationResults');
+        function displayConstraints(data) {
+            const constraintsSection = document.getElementById('constraintsSection');
+            let html = '<h2 style="color: #667eea; margin-bottom: 20px;">שלב 2: אילוצי מפתח פרטי</h2>';
 
-            let html = `
-                <div class="validation-results">
-                    <h3 style="color: #667eea; margin-bottom: 20px;">✓ פרמטרי העקום תקינים</h3>
-
-                    <div class="curve-info-box">
-                        <h4>מידע על העקום</h4>
-                        <div class="detail-item">
-                            <div class="detail-label">מספר ראשוני:</div>
-                            <div class="detail-value">${data.prime}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">משוואת העקום:</div>
-                            <div class="detail-value">${data.curveEquation}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">סדר הקבוצה |E(F_q)|:</div>
-                            <div class="detail-value">${data.groupOrder}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">הסדר הראשוני הגדול ביותר r:</div>
-                            <div class="detail-value">${data.r}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">נקודה מחוללת:</div>
-                            <div class="detail-value">${data.generatorPoint}</div>
-                        </div>
+            html += `
+                <div class="detail-section">
+                    <h3>פרטי עקומה</h3>
+                    <div class="detail-item">
+                        <div class="detail-label">מספר ראשוני (p):</div>
+                        <div class="detail-value">${data.prime}</div>
                     </div>
-
-                    <div class="key-constraints-box">
-                        <h4>אילוצי מפתח פרטי</h4>
-                        <div class="constraint-rule">
-                            <strong>כלל תקינות:</strong> ${data.validationRule}
-                        </div>
-                        <div class="constraint-explanation">
-                            <strong>הסבר:</strong> ${data.explanation}
-                        </div>
-                        <div class="constraint-description">
-                            ${data.constraintDescription}
-                        </div>
+                    <div class="detail-item">
+                        <div class="detail-label">משוואת העקומה:</div>
+                        <div class="detail-value">${data.curveEquation}</div>
                     </div>
-
-                    <div class="example-box valid-keys">
-                        <h4>דוגמאות למפתחות תקינים ✓</h4>
-                        <div class="example-values">
-                            ${data.validKeyExamples.map(key => `<span class="example-key valid">${key}</span>`).join(' ')}
-                        </div>
+                    <div class="detail-item">
+                        <div class="detail-label">סדר קבוצה:</div>
+                        <div class="detail-value">${data.groupOrder}</div>
                     </div>
-
-                    <div class="example-box invalid-keys">
-                        <h4>דוגמאות למפתחות אסורים ✗</h4>
-                        <div class="example-values">
-                            ${data.invalidKeyExamples.map(key => `<span class="example-key invalid">${key}</span>`).join(' ')}
-                        </div>
-                        <div class="warning-text">
-                            מפתחות אלו יגרמו ל-sk × P = ∞ (נקודת אינסוף) ויכשילו את חישוב החתימה
-                        </div>
+                    <div class="detail-item">
+                        <div class="detail-label">סדר נקודת יצירה (r):</div>
+                        <div class="detail-value">${data.r}</div>
                     </div>
+                    <div class="detail-item">
+                        <div class="detail-label">נקודת יצירה:</div>
+                        <div class="detail-value">${data.generatorPoint}</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>${data.constraintDescription}</h3>
+                    <div class="detail-item">
+                        <div class="detail-label">כלל אימות:</div>
+                        <div class="detail-value" style="white-space: pre-wrap; direction: rtl; text-align: right;">${data.validationRule}</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>הסבר מפורט</h3>
+                    <div class="detail-item">
+                        <div class="detail-value" style="white-space: pre-wrap; direction: rtl; text-align: right;">${data.explanation}</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 style="color: #51cf66;">✓ דוגמאות למפתחות פרטיים תקינים</h3>
+            `;
+
+            data.validKeyExamples.forEach(key => {
+                html += `
+                    <div class="detail-item" style="background: #d3f9d8;">
+                        <div class="detail-value" style="color: #2b8a3e; font-weight: bold;">sk = ${key}</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                </div>
+
+                <div class="detail-section">
+                    <h3 style="color: #f03e3e;">✗ דוגמאות למפתחות פרטיים לא תקינים</h3>
+            `;
+
+            data.invalidKeyExamples.forEach(key => {
+                html += `
+                    <div class="detail-item" style="background: #ffe0e0;">
+                        <div class="detail-value" style="color: #c92a2a; font-weight: bold;">sk = ${key}</div>
+                    </div>
+                `;
+            });
+
+            html += `
                 </div>
             `;
 
-            validationResults.innerHTML = html;
-            validationResults.classList.remove('hidden');
+            constraintsSection.innerHTML = html;
+            constraintsSection.classList.remove('hidden');
+
+            // Show Step 3 section
+            document.getElementById('signatureSection').classList.remove('hidden');
+
+            // Populate the valid keys dropdown
+            const keySelect = document.getElementById('privateKeySelect');
+            keySelect.innerHTML = '<option value="">-- בחר מפתח פרטי תקין --</option>';
+            data.validKeyExamples.forEach(key => {
+                keySelect.innerHTML += `<option value="${key}">${key}</option>`;
+            });
+
+            // Store valid keys for validation
+            window.validPrivateKeys = data.validKeyExamples;
+
+            // Scroll to constraints
+            constraintsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function onKeyInputModeChange() {
+            const mode = document.querySelector('input[name="keyInputMode"]:checked').value;
+            const selectMode = document.getElementById('selectKeyMode');
+            const manualMode = document.getElementById('manualKeyMode');
+
+            if (mode === 'select') {
+                selectMode.classList.remove('hidden');
+                manualMode.classList.add('hidden');
+            } else {
+                selectMode.classList.add('hidden');
+                manualMode.classList.remove('hidden');
+            }
+        }
+
+        function getSelectedPrivateKey() {
+            const mode = document.querySelector('input[name="keyInputMode"]:checked').value;
+            if (mode === 'select') {
+                return document.getElementById('privateKeySelect').value;
+            } else {
+                return document.getElementById('privateKeyManual').value;
+            }
         }
 
         async function generateSignature() {
@@ -545,7 +611,7 @@
                         q: document.getElementById('primeQ').value,
                         a: document.getElementById('paramA').value,
                         b: document.getElementById('paramB').value,
-                        privateKey: document.getElementById('privateKey').value,
+                        privateKey: getSelectedPrivateKey(),
                         message: document.getElementById('message').value,
                         language: 'he',
                         includeDetailedReport: document.getElementById('includeDetailedReport').checked
