@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Numerics;
 using System.Text;
 using BLS.ElipticCurve.Implementations;
@@ -43,6 +43,12 @@ namespace BLS.WebAPI.Services
 
                 // Get largest prime divisor r
                 var r = baseCurve.R;
+
+                // Validate private key before proceeding
+                if (!ValidatePrivateKey(privateKey, r, lang, response))
+                {
+                    return response;
+                }
 
                 // Step 3: Hash message to point P = H(m)
                 var P = ExecuteStep3(message, baseCurve, baseField, lang, response);
@@ -369,6 +375,150 @@ namespace BLS.WebAPI.Services
             });
 
             return verification;
+        }
+
+        /// <summary>
+        /// Validates the curve parameters and returns private key constraints.
+        /// Similar to aggregated signature validation but for single signature.
+        /// </summary>
+        public PrivateKeyConstraintsResponse GetPrivateKeyConstraints(PrivateKeyConstraintsRequest request)
+        {
+            var response = new PrivateKeyConstraintsResponse { Success = true };
+
+            try
+            {
+                var q = BigInteger.Parse(request.PRIME_Q);
+                var a = BigInteger.Parse(request.A);
+                var b = BigInteger.Parse(request.B);
+                var lang = request.Language ?? "he";
+
+                // Create field and curve
+                var baseField = new PrimeField(q);
+                var baseCurve = new EllipticCurve<PrimeFieldElement>(
+                    baseField,
+                    baseField.FromInt(a),
+                    baseField.FromInt(b)
+                );
+
+                var groupOrder = baseCurve.GroupOrder;
+                var r = baseCurve.R;
+
+                // Find a generator point for display
+                var generator = FindGenerator(baseCurve, r);
+
+                // Populate response
+                response.Prime = q.ToString();
+                response.CurveEquation = $"y² = x³ + {a}x + {b}";
+                response.GroupOrder = groupOrder.ToString();
+                response.R = r.ToString();
+                response.GeneratorPoint = generator != null ? $"({generator.X}, {generator.Y})" : "Not found";
+
+                // Get valid and invalid key examples
+                response.ValidKeyExamples = GetValidKeyExamples(r);
+                response.InvalidKeyExamples = GetInvalidKeyExamples(r);
+
+                // Explanations
+                if (lang == "he")
+                {
+                    response.ValidationRule = $"המפתח הפרטי חייב לקיים: sk mod {r} ≠ 0";
+                    response.Explanation = $"כאשר המפתח הפרטי הוא כפולה של r (הסדר של הנקודה), הכפל sk × P יתן את נקודת האינסוף, מה שיגרום לכשל בחישוב החתימה.";
+                    response.ConstraintDescription = $"מפתחות אסורים: 0, {r}, {2 * r}, {3 * r}, ... (כל הכפולות של r)";
+                }
+                else
+                {
+                    response.ValidationRule = $"Private key must satisfy: sk mod {r} ≠ 0";
+                    response.Explanation = $"When the private key is a multiple of r (the point order), multiplication sk × P yields the point at infinity, causing signature computation to fail.";
+                    response.ConstraintDescription = $"Forbidden keys: 0, {r}, {2 * r}, {3 * r}, ... (all multiples of r)";
+                }
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.ErrorMessage = $"Error: {ex.Message}";
+            }
+
+            return response;
+        }
+
+        private bool ValidatePrivateKey(BigInteger privateKey, BigInteger r, string lang, BLSSignatureResponse response)
+        {
+            if (privateKey % r == 0)
+            {
+                response.Success = false;
+                if (lang == "he")
+                {
+                    response.ErrorMessage = $"מפתח פרטי לא חוקי: {privateKey} הוא כפולה של r = {r}. " +
+                        $"זה יגרום ל-{privateKey} × P = ∞ (נקודת אינסוף), מה שימנע את חישוב החתימה. " +
+                        $"בחר מפתח כך ש-sk mod {r} ≠ 0.";
+                }
+                else
+                {
+                    response.ErrorMessage = $"Invalid private key: {privateKey} is a multiple of r = {r}. " +
+                        $"This causes {privateKey} × P = ∞ (point at infinity), preventing signature computation. " +
+                        $"Choose a key such that sk mod {r} ≠ 0.";
+                }
+                return false;
+            }
+            return true;
+        }
+
+        private IECPoint<PrimeFieldElement>? FindGenerator(EllipticCurve<PrimeFieldElement> curve, BigInteger r)
+        {
+            var field = curve.A.Field;
+            var p = field.Characteristic;
+            var cofactor = curve.GroupOrder / r;
+
+            for (BigInteger x = 0; x < p && x < 100; x++)
+            {
+                var xElem = field.FromInt(x);
+                var rhs = xElem.Power(3).Add(curve.A.Multiply(xElem)).Add(curve.B);
+                var rhsInt = rhs.Value;
+
+                var y = NumberTheoryUtils.SqrtModP(rhsInt, p);
+                if (y == -1) continue;
+
+                var yElem = field.FromInt(y);
+                var point = curve.CreatePoint(xElem, yElem);
+
+                if (!curve.IsOnCurve(point)) continue;
+
+                var candidate = point.Multiply(cofactor);
+                if (!candidate.IsInfinity)
+                {
+                    var check = candidate.Multiply(r);
+                    if (check.IsInfinity)
+                    {
+                        return candidate;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private List<string> GetValidKeyExamples(BigInteger r)
+        {
+            var examples = new List<string>();
+            int count = 0;
+            for (BigInteger i = 1; i <= r * 3 && count < 10; i++)
+            {
+                if (i % r != 0)
+                {
+                    examples.Add(i.ToString());
+                    count++;
+                }
+            }
+            return examples;
+        }
+
+        private List<string> GetInvalidKeyExamples(BigInteger r)
+        {
+            var examples = new List<string> { "0" };
+            for (int i = 1; i <= 5; i++)
+            {
+                examples.Add((r * i).ToString());
+            }
+            return examples;
         }
 
         private IECPoint<PrimeFieldElement> HashToPointWithTracing(

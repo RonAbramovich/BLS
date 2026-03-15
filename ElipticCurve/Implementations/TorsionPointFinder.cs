@@ -79,7 +79,11 @@ namespace BLS.ElipticCurve.Implementations
             throw new InvalidOperationException($"Failed to find independent torsion point after {maxAttempts} attempts. This is statistically unlikely (p < (1/r)^{maxAttempts}).");
         }
 
-        private static IECPoint<ExtensionFieldElement> GenerateRandomPoint(IEllipticCurve<ExtensionFieldElement> curve,ExtensionField field, Random random, int maxAttempts)
+        private static IECPoint<ExtensionFieldElement> GenerateRandomPoint(
+            IEllipticCurve<ExtensionFieldElement> curve, 
+            ExtensionField field, 
+            Random random, 
+            int maxAttempts)
         {
             BigInteger q = field.BaseField.Characteristic;
             int k = field.ExtensionDegree;
@@ -90,88 +94,26 @@ namespace BLS.ElipticCurve.Implementations
                 var coeffs = new BigInteger[k];
                 for (int i = 0; i < k; i++)
                 {
-                    coeffs[i] = RandomBigInteger(random, q);
+                    coeffs[i] = NumberTheoryUtils.RandomBigInteger(random, q);
                 }
 
                 var randomPoly = new Polynomial(q, coeffs);
                 var x = new ExtensionFieldElement(field, randomPoly);
                 var rhs = x.Power(3).Add(curve.A.Multiply(x)).Add(curve.B);
 
-                // For fields up to reasonable size, try all possible y values
-                BigInteger fieldSize = BigInteger.Pow(q, k);
-                if (fieldSize < 50000)
+                // Use Tonelli-Shanks from NumberTheoryUtils to find square root in extension field
+                var y = NumberTheoryUtils.SqrtModExtensionField(rhs, field, random);
+                if (y != null)
                 {
-                    // Brute force search for y (works for q² ≤ 50k, e.g., q ≤ 223)
-                    for (BigInteger yi = 0; yi < fieldSize; yi++)
+                    var point = curve.CreatePoint(x, y);
+                    if (curve.IsOnCurve(point) && !point.IsInfinity)
                     {
-                        var yCoeffs = new BigInteger[k];
-                        BigInteger temp = yi;
-                        for (int j = 0; j < k; j++)
-                        {
-                            yCoeffs[j] = temp % q;
-                            temp /= q;
-                        }
-
-                        var yPoly = new Polynomial(q, yCoeffs);
-                        var y = new ExtensionFieldElement(field, yPoly);
-                        var lhs = y.Multiply(y);
-
-                        if (lhs.Equals(rhs))
-                        {
-                            var point = curve.CreatePoint(x, y);
-                            if (curve.IsOnCurve(point) && !point.IsInfinity)
-                            {
-                                return point;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // Use square root formula for larger fields
-                    var y = TrySolveForY(rhs, field);
-                    if (y != null)
-                    {
-                        var point = curve.CreatePoint(x, y);
-                        if (curve.IsOnCurve(point) && !point.IsInfinity)
-                        {
-                            return point;
-                        }
+                        return point;
                     }
                 }
             }
 
             throw new InvalidOperationException("Failed to generate a random point on the curve.");
-        }
-
-        /// <summary>
-        /// Attempts to find y such that y² = rhs in the extension field.
-        /// For fields where q^k ≡ 3 (mod 4), we can use y = rhs^((q^k+1)/4).
-        /// </summary>
-        private static ExtensionFieldElement? TrySolveForY(ExtensionFieldElement rhs, ExtensionField field)
-        {
-            BigInteger q = field.BaseField.Characteristic;
-            int k = field.ExtensionDegree;
-            BigInteger qk = BigInteger.Pow(q, k);
-
-            // Check if q^k ≡ 3 (mod 4)
-            if (qk % 4 == 3)
-            {
-                // Compute y = rhs^((q^k+1)/4)
-                BigInteger exponent = (qk + 1) / 4;
-                var y = rhs.Power(exponent);
-
-                // Verify y² = rhs
-                var ySquared = y.Multiply(y);
-                if (ySquared.Equals(rhs))
-                {
-                    return y;
-                }
-            }
-
-            // For other cases, we'd need Tonelli-Shanks or other methods
-            // For now, return null
-            return null;
         }
 
         /// <summary>
@@ -193,29 +135,6 @@ namespace BLS.ElipticCurve.Implementations
             var yPowQ = point.Y.Power(q);
 
             return point.Curve.CreatePoint(xPowQ, yPowQ);
-        }
-
-        /// <summary>
-        /// Generates a random BigInteger in the range [0, max).
-        /// </summary>
-        private static BigInteger RandomBigInteger(Random random, BigInteger max)
-        {
-            if (max <= int.MaxValue)
-            {
-                return random.Next((int)max);
-            }
-
-            // For larger values, generate random bytes
-            byte[] bytes = max.ToByteArray();
-            BigInteger result;
-            do
-            {
-                random.NextBytes(bytes);
-                bytes[bytes.Length - 1] &= 0x7F; // Ensure positive
-                result = new BigInteger(bytes);
-            } while (result >= max);
-
-            return result;
         }
     }
 }

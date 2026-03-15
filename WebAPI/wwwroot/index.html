@@ -338,8 +338,8 @@
 
         <div class="content">
             <div class="input-section">
-                <h2>פרמטרי קלט</h2>
-                
+                <h2>פרמטרי עקום והודעה</h2>
+
                 <div class="form-group">
                     <label for="primeQ">מספר ראשוני q (מאפיין השדה):</label>
                     <input type="text" id="primeQ" value="43" placeholder="לדוגמה: 43">
@@ -358,14 +358,26 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="message">הודעה לחתימה:</label>
+                    <input type="text" id="message" value="שלום" placeholder="הקלד הודעה כלשהי">
+                </div>
+
+                <button class="btn" onclick="validateBLSParameters()" id="validateBLSBtn">
+                    אמת פרמטרים והצג אילוצי מפתח פרטי
+                </button>
+            </div>
+
+            <!-- Validation Results Section (Hidden Initially) -->
+            <div id="blsValidationResults" class="hidden"></div>
+
+            <!-- Private Key Selection Section (Hidden Initially) -->
+            <div id="blsPrivateKeySection" class="input-section hidden">
+                <h2>בחירת מפתח פרטי</h2>
+
+                <div class="form-group">
                     <label for="privateKey">מפתח פרטי a:</label>
                     <input type="text" id="privateKey" value="5" placeholder="לדוגמה: 5">
                     <small>סקלר עבור חישוב המפתח הציבורי</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="message">הודעה לחתימה:</label>
-                    <input type="text" id="message" value="שלום" placeholder="הקלד הודעה כלשהי">
                 </div>
 
                 <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
@@ -390,6 +402,124 @@
     </div>
 
     <script>
+        async function validateBLSParameters() {
+            const validateBtn = document.getElementById('validateBLSBtn');
+            const validationResults = document.getElementById('blsValidationResults');
+            const privateKeySection = document.getElementById('blsPrivateKeySection');
+            const errorSection = document.getElementById('errorSection');
+
+            // Clear previous results
+            validationResults.classList.add('hidden');
+            privateKeySection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+            validationResults.innerHTML = '';
+
+            // Disable button
+            validateBtn.disabled = true;
+            validateBtn.textContent = 'מאמת...';
+
+            try {
+                const response = await fetch('/api/bls/validate-parameters', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        PRIME_Q: document.getElementById('primeQ').value,
+                        A: document.getElementById('paramA').value,
+                        B: document.getElementById('paramB').value,
+                        Language: 'he'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.errorMessage || 'שגיאה לא ידועה');
+                }
+
+                displayBLSValidationResults(data);
+
+                // Show private key section
+                privateKeySection.classList.remove('hidden');
+                privateKeySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            } catch (error) {
+                errorSection.textContent = `שגיאה: ${error.message}`;
+                errorSection.classList.remove('hidden');
+            } finally {
+                validateBtn.disabled = false;
+                validateBtn.textContent = 'אמת פרמטרים והצג אילוצי מפתח פרטי';
+            }
+        }
+
+        function displayBLSValidationResults(data) {
+            const validationResults = document.getElementById('blsValidationResults');
+
+            let html = `
+                <div class="validation-results">
+                    <h3 style="color: #667eea; margin-bottom: 20px;">✓ פרמטרי העקום תקינים</h3>
+
+                    <div class="curve-info-box">
+                        <h4>מידע על העקום</h4>
+                        <div class="detail-item">
+                            <div class="detail-label">מספר ראשוני:</div>
+                            <div class="detail-value">${data.prime}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">משוואת העקום:</div>
+                            <div class="detail-value">${data.curveEquation}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">סדר הקבוצה |E(F_q)|:</div>
+                            <div class="detail-value">${data.groupOrder}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">הסדר הראשוני הגדול ביותר r:</div>
+                            <div class="detail-value">${data.r}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">נקודה מחוללת:</div>
+                            <div class="detail-value">${data.generatorPoint}</div>
+                        </div>
+                    </div>
+
+                    <div class="key-constraints-box">
+                        <h4>אילוצי מפתח פרטי</h4>
+                        <div class="constraint-rule">
+                            <strong>כלל תקינות:</strong> ${data.validationRule}
+                        </div>
+                        <div class="constraint-explanation">
+                            <strong>הסבר:</strong> ${data.explanation}
+                        </div>
+                        <div class="constraint-description">
+                            ${data.constraintDescription}
+                        </div>
+                    </div>
+
+                    <div class="example-box valid-keys">
+                        <h4>דוגמאות למפתחות תקינים ✓</h4>
+                        <div class="example-values">
+                            ${data.validKeyExamples.map(key => `<span class="example-key valid">${key}</span>`).join(' ')}
+                        </div>
+                    </div>
+
+                    <div class="example-box invalid-keys">
+                        <h4>דוגמאות למפתחות אסורים ✗</h4>
+                        <div class="example-values">
+                            ${data.invalidKeyExamples.map(key => `<span class="example-key invalid">${key}</span>`).join(' ')}
+                        </div>
+                        <div class="warning-text">
+                            מפתחות אלו יגרמו ל-sk × P = ∞ (נקודת אינסוף) ויכשילו את חישוב החתימה
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            validationResults.innerHTML = html;
+            validationResults.classList.remove('hidden');
+        }
+
         async function generateSignature() {
             const submitBtn = document.getElementById('submitBtn');
             const loadingSection = document.getElementById('loadingSection');
