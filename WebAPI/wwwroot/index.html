@@ -337,9 +337,10 @@
         </div>
 
         <div class="content">
+            <!-- STEP 1: Curve Parameters -->
             <div class="input-section">
-                <h2>פרמטרי קלט</h2>
-                
+                <h2>שלב 1: בחר פרמטרי עקומה</h2>
+
                 <div class="form-group">
                     <label for="primeQ">מספר ראשוני q (מאפיין השדה):</label>
                     <input type="text" id="primeQ" value="43" placeholder="לדוגמה: 43">
@@ -357,10 +358,49 @@
                     <small>חייב לקיים: 4A³ + 27B² ≠ 0</small>
                 </div>
 
+                <button class="btn" onclick="showPrivateKeyConstraints()" id="validateBtn">
+                    אמת פרמטרים והצג אילוצי מפתח פרטי
+                </button>
+            </div>
+
+            <div id="loadingSection" class="hidden">
+                <div class="loader"></div>
+                <p style="text-align: center; color: #666;">מבצע חישובים...</p>
+            </div>
+
+            <div id="errorSection" class="hidden error-message"></div>
+
+            <div id="constraintsSection" class="results-section hidden"></div>
+
+            <!-- STEP 3: Private Key Selection & Signature -->
+            <div id="signatureSection" class="input-section hidden" style="margin-top: 20px;">
+                <h2>שלב 3: בחר מפתח פרטי וחשב חתימה</h2>
+
                 <div class="form-group">
-                    <label for="privateKey">מפתח פרטי a:</label>
-                    <input type="text" id="privateKey" value="5" placeholder="לדוגמה: 5">
-                    <small>סקלר עבור חישוב המפתח הציבורי</small>
+                    <label>אופן בחירת מפתח פרטי:</label>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: inline-flex; align-items: center; margin-left: 20px; cursor: pointer;">
+                            <input type="radio" name="keyInputMode" value="select" checked onchange="onKeyInputModeChange()" style="width: auto; margin-left: 8px;">
+                            בחר מרשימת מפתחות תקינים
+                        </label>
+                        <label style="display: inline-flex; align-items: center; cursor: pointer;">
+                            <input type="radio" name="keyInputMode" value="manual" onchange="onKeyInputModeChange()" style="width: auto; margin-left: 8px;">
+                            הזן מפתח ידנית
+                        </label>
+                    </div>
+                </div>
+
+                <div id="selectKeyMode" class="form-group">
+                    <label for="privateKeySelect">בחר מפתח פרטי תקין:</label>
+                    <select id="privateKeySelect" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
+                        <option value="">-- בחר מפתח פרטי תקין --</option>
+                    </select>
+                </div>
+
+                <div id="manualKeyMode" class="form-group hidden">
+                    <label for="privateKeyManual">הזן מפתח פרטי:</label>
+                    <input type="text" id="privateKeyManual" placeholder="לדוגמה: 5">
+                    <small>ודא שהמפתח תקין (sk > 0 ו- sk mod r ≠ 0)</small>
                 </div>
 
                 <div class="form-group">
@@ -378,18 +418,174 @@
                 </button>
             </div>
 
-            <div id="loadingSection" class="hidden">
-                <div class="loader"></div>
-                <p style="text-align: center; color: #666;">מבצע חישובים...</p>
-            </div>
-
-            <div id="errorSection" class="hidden error-message"></div>
-
             <div id="resultsSection" class="results-section hidden"></div>
         </div>
     </div>
 
     <script>
+        async function showPrivateKeyConstraints() {
+            const validateBtn = document.getElementById('validateBtn');
+            const loadingSection = document.getElementById('loadingSection');
+            const errorSection = document.getElementById('errorSection');
+            const constraintsSection = document.getElementById('constraintsSection');
+
+            // Clear previous results
+            constraintsSection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+            constraintsSection.innerHTML = '';
+
+            // Show loading
+            validateBtn.disabled = true;
+            loadingSection.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/aggregated/private-key-constraints', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        PRIME_Q: document.getElementById('primeQ').value,
+                        A: document.getElementById('paramA').value,
+                        B: document.getElementById('paramB').value,
+                        Language: 'he'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.errorMessage || 'שגיאה לא ידועה');
+                }
+
+                displayConstraints(data);
+            } catch (error) {
+                errorSection.textContent = `שגיאה: ${error.message}`;
+                errorSection.classList.remove('hidden');
+            } finally {
+                validateBtn.disabled = false;
+                loadingSection.classList.add('hidden');
+            }
+        }
+
+        function displayConstraints(data) {
+            const constraintsSection = document.getElementById('constraintsSection');
+            let html = '<h2 style="color: #667eea; margin-bottom: 20px;">שלב 2: אילוצי מפתח פרטי</h2>';
+
+            html += `
+                <div class="detail-section">
+                    <h3>פרטי עקומה</h3>
+                    <div class="detail-item">
+                        <div class="detail-label">מספר ראשוני (p):</div>
+                        <div class="detail-value">${data.prime}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">משוואת העקומה:</div>
+                        <div class="detail-value">${data.curveEquation}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">סדר קבוצה:</div>
+                        <div class="detail-value">${data.groupOrder}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">סדר נקודת יצירה (r):</div>
+                        <div class="detail-value">${data.r}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">נקודת יצירה:</div>
+                        <div class="detail-value">${data.generatorPoint}</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>${data.constraintDescription}</h3>
+                    <div class="detail-item">
+                        <div class="detail-label">כלל אימות:</div>
+                        <div class="detail-value" style="white-space: pre-wrap; direction: rtl; text-align: right;">${data.validationRule}</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>הסבר מפורט</h3>
+                    <div class="detail-item">
+                        <div class="detail-value" style="white-space: pre-wrap; direction: rtl; text-align: right;">${data.explanation}</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 style="color: #51cf66;">✓ דוגמאות למפתחות פרטיים תקינים</h3>
+            `;
+
+            data.validKeyExamples.forEach(key => {
+                html += `
+                    <div class="detail-item" style="background: #d3f9d8;">
+                        <div class="detail-value" style="color: #2b8a3e; font-weight: bold;">sk = ${key}</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                </div>
+
+                <div class="detail-section">
+                    <h3 style="color: #f03e3e;">✗ דוגמאות למפתחות פרטיים לא תקינים</h3>
+            `;
+
+            data.invalidKeyExamples.forEach(key => {
+                html += `
+                    <div class="detail-item" style="background: #ffe0e0;">
+                        <div class="detail-value" style="color: #c92a2a; font-weight: bold;">sk = ${key}</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                </div>
+            `;
+
+            constraintsSection.innerHTML = html;
+            constraintsSection.classList.remove('hidden');
+
+            // Show Step 3 section
+            document.getElementById('signatureSection').classList.remove('hidden');
+
+            // Populate the valid keys dropdown
+            const keySelect = document.getElementById('privateKeySelect');
+            keySelect.innerHTML = '<option value="">-- בחר מפתח פרטי תקין --</option>';
+            data.validKeyExamples.forEach(key => {
+                keySelect.innerHTML += `<option value="${key}">${key}</option>`;
+            });
+
+            // Store valid keys for validation
+            window.validPrivateKeys = data.validKeyExamples;
+
+            // Scroll to constraints
+            constraintsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function onKeyInputModeChange() {
+            const mode = document.querySelector('input[name="keyInputMode"]:checked').value;
+            const selectMode = document.getElementById('selectKeyMode');
+            const manualMode = document.getElementById('manualKeyMode');
+
+            if (mode === 'select') {
+                selectMode.classList.remove('hidden');
+                manualMode.classList.add('hidden');
+            } else {
+                selectMode.classList.add('hidden');
+                manualMode.classList.remove('hidden');
+            }
+        }
+
+        function getSelectedPrivateKey() {
+            const mode = document.querySelector('input[name="keyInputMode"]:checked').value;
+            if (mode === 'select') {
+                return document.getElementById('privateKeySelect').value;
+            } else {
+                return document.getElementById('privateKeyManual').value;
+            }
+        }
+
         async function generateSignature() {
             const submitBtn = document.getElementById('submitBtn');
             const loadingSection = document.getElementById('loadingSection');
@@ -415,7 +611,7 @@
                         q: document.getElementById('primeQ').value,
                         a: document.getElementById('paramA').value,
                         b: document.getElementById('paramB').value,
-                        privateKey: document.getElementById('privateKey').value,
+                        privateKey: getSelectedPrivateKey(),
                         message: document.getElementById('message').value,
                         language: 'he',
                         includeDetailedReport: document.getElementById('includeDetailedReport').checked

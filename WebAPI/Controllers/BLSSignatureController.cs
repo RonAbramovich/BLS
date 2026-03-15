@@ -61,6 +61,46 @@ namespace BLS.WebAPI.Controllers
         }
 
         /// <summary>
+        /// Validate curve parameters and return private key constraints
+        /// </summary>
+        /// <param name="request">Request with curve parameters</param>
+        /// <returns>Valid and invalid private key examples with explanations</returns>
+        [HttpPost("validate-parameters")]
+        [ProducesResponseType(typeof(PrivateKeyConstraintsResponse), 200)]
+        [ProducesResponseType(400)]
+        public ActionResult<PrivateKeyConstraintsResponse> ValidateParameters([FromBody] PrivateKeyConstraintsRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new PrivateKeyConstraintsResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Invalid input parameters."
+                });
+            }
+
+            try
+            {
+                var response = _signatureService.GetPrivateKeyConstraints(request);
+
+                if (!response.Success)
+                {
+                    return BadRequest(response);
+                }
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new PrivateKeyConstraintsResponse
+                {
+                    Success = false,
+                    ErrorMessage = $"Error: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
         /// Health check endpoint
         /// </summary>
         [HttpGet("health")]
