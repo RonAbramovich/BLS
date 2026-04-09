@@ -128,6 +128,11 @@ namespace BLS.Fields.Implementations
             return HashCode.Combine(Field.Characteristic, Value);
         }
 
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
+
         #region Operator-Overloads
         public static PrimeFieldElement operator +(PrimeFieldElement a, PrimeFieldElement b) => a.Add(b);
         public static PrimeFieldElement operator -(PrimeFieldElement a, PrimeFieldElement b) => a.Sub(b);

@@ -192,6 +192,11 @@ namespace BLS.ElipticCurve.Implementations
             if (IsInfinity) return 0;
             return HashCode.Combine(X, Y);
         }
+
+        public override string ToString()
+        {
+            return IsInfinity ? "Infinity" : $"({X}, {Y})";
+        }
         
         private IECPoint<T> CalculateSumFromFiniteSlope(IECPoint<T> other)
         {
