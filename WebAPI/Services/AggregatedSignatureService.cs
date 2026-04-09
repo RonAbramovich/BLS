@@ -74,7 +74,7 @@ namespace BLS.WebAPI.Services
                 // Detailed explanation
                 response.Explanation = lang == "he"
                     ? $"הסבר:\n" +
-                      $"• הנקודה הגנרטורית G = ({generator.X.Value}, {generator.Y.Value}) היא בעלת סדר r={r}\n" +
+                      $"• הנקודה היוצרת G = ({generator.X.Value}, {generator.Y.Value}) היא בעלת סדר r={r}\n" +
                       $"• כלומר: r × G = נקודת אינסוף\n" +
                       $"• לכן, אם sk הוא כפולה של r (sk = k×r), אזי:\n" +
                       $"  pk = sk × G = (k×r) × G = k × (r × G) = k × ∞ = ∞\n" +
@@ -145,7 +145,7 @@ namespace BLS.WebAPI.Services
                 // Find generator point
                 var generator = FindGenerator(baseCurve, baseField, r);
 
-                AddCommonStep(response, lang == "he" ? "בחירת נקודת יצירה" : "Select generator point",
+                AddCommonStep(response, lang == "he" ? "בחירת נקודה יוצרת" : "Select generator point",
                     lang == "he" ?
                     $"G = ({generator.X.Value}, {generator.Y.Value})" :
                     $"G = ({generator.X.Value}, {generator.Y.Value})");
@@ -276,7 +276,7 @@ namespace BLS.WebAPI.Services
 
                 // First, we need to set up extension field and find a torsion point
                 int k = FindEmbeddingDegree(q, r);
-                AddCommonStep(response, lang == "he" ? "מציאת דרגת הטמעה" : "Find embedding degree",
+                AddCommonStep(response, lang == "he" ? "מציאת מעלת השיכון" : "Find embedding degree",
                     lang == "he" ?
                     $"k = {k} (הקטן ביותר כך ש- r | q<sup>k</sup> - 1)" :
                     $"k = {k} (smallest such that r | q<sup>k</sup> - 1)");
@@ -290,11 +290,11 @@ namespace BLS.WebAPI.Services
 
                 AddCommonStep(response, lang == "he" ? "יצירת שדה הרחבה" : "Create extension field",
                     lang == "he" ?
-                    $"F<sub>q</sub><sup>{k}</sup> עם פולינום בלתי פריק מדרגה {k}" :
+                    $"F<sub>q</sub><sup>{k}</sup> עם פולינום בלתי פריק ממעלה {k}" :
                     $"F<sub>q</sub><sup>{k}</sup> with irreducible polynomial of degree {k}");
 
                 var Q = TorsionPointFinder.FindIndependentTorsionPoint(extensionCurve, r);
-                AddCommonStep(response, lang == "he" ? "מציאת נקודת טורסיה" : "Find torsion point",
+                AddCommonStep(response, lang == "he" ? "מציאת נקודת פיתול" : "Find torsion point",
                     lang == "he" ?
                     $"Q ∈ E(F<sub>q</sub><sup>k</sup>)[r] בלתי תלויה לינארית" :
                     $"Q ∈ E(F<sub>q</sub><sup>k</sup>)[r] linearly independent");

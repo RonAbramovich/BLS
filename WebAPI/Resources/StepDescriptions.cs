@@ -13,7 +13,7 @@ namespace BLS.WebAPI.Resources
             public const string Step4 = "חישוב מעלת השיכון k";
             public const string Step5 = "מציאת פולינום בלתי פריק מעל F<sub>q</sub> ממעלה k";
             public const string Step6 = "יצירת שדה הרחבה F<sub>q</sub><sup>k</sup> ועקום מעל השדה המורחב";
-            public const string Step7 = "מציאת נקודה Q בתת-קבוצת r-טורסיה של E(F<sub>q</sub><sup>k</sup>)";
+            public const string Step7 = "מציאת נקודה Q בתת-קבוצת r-פיתול של E(F<sub>q</sub><sup>k</sup>)";
             public const string Step8 = "חישוב חתימת אליס: e<sub>r</sub>(a·H(m), Q)";
             public const string Step9 = "חישוב אימות בוב: e<sub>r</sub>(H(m), a·Q)";
         }

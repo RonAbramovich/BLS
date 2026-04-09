@@ -334,7 +334,7 @@
     <div class="container">
         <div class="header">
             <h1>חתימת BLS אינטראקטיבית</h1>
-            <p>מערכת להדגמת חתימה והצפנה מבוססת זיווג על עקומות אליפטיות</p>
+            <p>מערכת להדגמת חתימה דיגיטלית מבוססת זיווג על עקומים אליפטיים</p>
         </div>
 
         <div class="content">
@@ -489,11 +489,11 @@
                         <div class="detail-value">${data.groupOrder}</div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-label">סדר נקודת יצירה (r):</div>
+                        <div class="detail-label">סדר נקודה יוצרת (r):</div>
                         <div class="detail-value">${data.r}</div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-label">נקודת יצירה:</div>
+                        <div class="detail-label">נקודה יוצרת:</div>
                         <div class="detail-value">${data.generatorPoint}</div>
                     </div>
                 </div>
@@ -693,13 +693,13 @@
                 const step3 = report.messageHashingDetails;
                 html += `
                     <div class="detail-section">
-                        <h3>שלב 3: הגבר הודעה לנקודה על העקום</h3>
+                        <h3>שלב 3: גיבוב הודעה לנקודה על העקום</h3>
                         <div class="detail-item">
                             <div class="detail-label">הודעה מקורית:</div>
                             <div class="detail-value">${step3.originalMessage}</div>
                         </div>
                         <div class="detail-item">
-                            <div class="detail-label">קידוד נעשה:</div>
+                            <div class="detail-label">שיטת קידוד:</div>
                             <div class="detail-value">${step3.encodingUsed}</div>
                         </div>
                         <div class="detail-item">
@@ -740,7 +740,7 @@
 
                 html += `
                         <div class="detail-item" style="margin-top: 20px; background: #d3f9d8;">
-                            <div class="detail-label">✅ נקודה סופית (אחרי מחיקת קופקטור):</div>
+                            <div class="detail-label">✅ נקודה סופית (אחרי ניקוי קופקטור):</div>
                             <div class="detail-value">P = (${step3.finalPointX}, ${step3.finalPointY})</div>
                         </div>
                     </div>
@@ -772,8 +772,8 @@
                         <div class="detail-item" style="background: #d3f9d8;">
                             <div class="detail-label">✅ נקודת פיתול סופית Q:</div>
                             <div class="detail-value">
-                                X (תואר ${step7.pointX_Degree}): ${step7.finalPointX_Polynomial}<br>
-                                Y (תואר ${step7.pointY_Degree}): ${step7.finalPointY_Polynomial}
+                                X (מעלה ${step7.pointX_Degree}): ${step7.finalPointX_Polynomial}<br>
+                                Y (מעלה ${step7.pointY_Degree}): ${step7.finalPointY_Polynomial}
                             </div>
                         </div>
                     </div>
