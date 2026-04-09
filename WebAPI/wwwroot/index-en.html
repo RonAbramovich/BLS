@@ -424,35 +424,6 @@
                     </div>
                 </div>
 
-                <div class="detail-section">
-                    <h3 style="color: #51cf66;">✓ Valid Private Key Examples</h3>
-            `;
-
-            data.validKeyExamples.forEach(key => {
-                html += `
-                    <div class="detail-item" style="background: #d3f9d8;">
-                        <div class="detail-value" style="color: #2b8a3e; font-weight: bold;">sk = ${key}</div>
-                    </div>
-                `;
-            });
-
-            html += `
-                </div>
-
-                <div class="detail-section">
-                    <h3 style="color: #f03e3e;">✗ Invalid Private Key Examples</h3>
-            `;
-
-            data.invalidKeyExamples.forEach(key => {
-                html += `
-                    <div class="detail-item" style="background: #ffe0e0;">
-                        <div class="detail-value" style="color: #c92a2a; font-weight: bold;">sk = ${key}</div>
-                    </div>
-                `;
-            });
-
-            html += `
-                </div>
             `;
 
             constraintsSection.innerHTML = html;
