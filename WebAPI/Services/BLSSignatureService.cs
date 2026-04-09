@@ -107,7 +107,7 @@ namespace BLS.WebAPI.Services
                 StepNumber = 1,
                 Description = StepDescriptions.GetDescription(1, lang),
                 TechnicalDescription = $"Created F_{q} and curve y^2 = x^3 + {a}x + {b}",
-                Result = $"F_{q}, E: y^2 = x^3 + {a}x + {b}",
+                Result = $"F<sub>{q}</sub>, E: y² = x³ + {a}x + {b}",
                 Details = new()
                 {
                     ["Field"] = $"F_{q}",
@@ -130,7 +130,7 @@ namespace BLS.WebAPI.Services
                 StepNumber = 2,
                 Description = StepDescriptions.GetDescription(2, lang),
                 TechnicalDescription = $"Calculated |E(F_q)| and found largest prime divisor r",
-                Result = $"|E(F_q)| = {groupOrder}, r = {r}",
+                Result = $"|E(F<sub>q</sub>)| = {groupOrder}, r = {r}",
                 Details = new()
                 {
                     ["GroupOrder"] = groupOrder.ToString(),
@@ -216,10 +216,10 @@ namespace BLS.WebAPI.Services
                 StepNumber = 5,
                 Description = StepDescriptions.GetDescription(5, lang),
                 TechnicalDescription = $"Found irreducible polynomial of degree {k} over F_{q}",
-                Result = $"g(x) = {poly}",
+                Result = $"g(x) = {poly.ToHtmlString()}",
                 Details = new()
                 {
-                    ["Polynomial"] = poly.ToString(),
+                    ["Polynomial"] = poly.ToHtmlString(),
                     ["Degree"] = k.ToString()
                 }
             });
@@ -245,7 +245,7 @@ namespace BLS.WebAPI.Services
                 StepNumber = 6,
                 Description = StepDescriptions.GetDescription(6, lang),
                 TechnicalDescription = $"Created F_q^{k} and curve E(F_q^{k})",
-                Result = $"F_{baseField.Characteristic}^{k}, |E(F_q^k)| = {N_k}",
+                Result = $"F<sub>{baseField.Characteristic}</sub><sup>{k}</sup>, |E(F<sub>q</sub><sup>k</sup>)| = {N_k}",
                 Details = new()
                 {
                     ["ExtensionDegree"] = k.ToString(),
@@ -268,7 +268,7 @@ namespace BLS.WebAPI.Services
                 response.DetailedReport.TorsionPointDetails = new Step7Details
                 {
                     TargetOrder = r.ToString(),
-                    ExtensionFieldSize = $"{extensionCurve.Field.Characteristic}^{extensionCurve.Field.ExtensionDegree}",
+                    ExtensionFieldSize = $"{extensionCurve.Field.Characteristic}<sup>{extensionCurve.Field.ExtensionDegree}</sup>",
                     FinalPointX_Polynomial = Q.X.ToString(),
                     FinalPointY_Polynomial = Q.Y.ToString(),
                     PointX_Degree = Q.X.Poly.Degree,

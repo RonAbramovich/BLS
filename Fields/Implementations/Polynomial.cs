@@ -302,6 +302,21 @@ namespace BLS.Fields.Implementations
             return string.Join(" + ", parts);
         }
 
+        public string ToHtmlString()
+        {
+            if (IsZero) return "0";
+            var parts = new List<string>();
+            for (int i = Degree; i >= 0; i--)
+            {
+                BigInteger c = this[i];
+                if (c == 0) continue;
+                if (i == 0) parts.Add(c.ToString());
+                else if (i == 1) parts.Add(c == 1 ? "x" : c + "x");
+                else parts.Add(c == 1 ? $"x<sup>{i}</sup>" : c + $"x<sup>{i}</sup>");
+            }
+            return string.Join(" + ", parts);
+        }
+
         #region privateHelpers
         private void Trim()
         {

@@ -545,20 +545,7 @@
                     </div>
                 </div>
 
-                <div class="detail-section">
-                    <h3 style="color: #51cf66;">✓ Valid Keys Available for Selection</h3>
-                    <p style="color: #666; margin-bottom: 10px;">The following keys will be available for each participant:</p>
             `;
-
-            data.validKeyExamples.forEach(key => {
-                html += `
-                    <div class="detail-item" style="background: #d3f9d8;">
-                        <div class="detail-value" style="color: #2b8a3e; font-weight: bold;">sk = ${key}</div>
-                    </div>
-                `;
-            });
-
-            html += `</div>`;
 
             constraintsSection.innerHTML = html;
             constraintsSection.classList.remove('hidden');
@@ -696,7 +683,7 @@
                     <h3>${statusText}</h3>
                     <p style="margin-top: 15px; font-size: 1.1em;">${explanationText}</p>
                     <p style="margin-top: 10px; font-size: 0.95em; opacity: 0.9;">
-                        e(σ_agg, Q) = e(H(m), Q)^(Σ sk_i)
+                        e(σ<sub>agg</sub>, Q) = e(H(m), Q)<sup>(Σ sk<sub>i</sub>)</sup>
                     </p>
                 </div>
             `;
