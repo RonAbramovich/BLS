@@ -340,6 +340,17 @@ body::before {
   background: #059669;
 }
 
+.btn-demo {
+  background: transparent;
+  border: 2px solid var(--accent);
+  color: var(--accent-light);
+}
+
+.btn-demo:hover:not(:disabled) {
+  background: var(--accent);
+  color: #fff;
+}
+
 .btn-danger {
   background: var(--error);
   padding: 6px 14px;

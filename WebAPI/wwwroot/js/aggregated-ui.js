@@ -39,6 +39,31 @@ function aggregatedApp(lang) {
       this.participants = this.participants.filter(p => p.id !== id);
     },
 
+    fillDemoParticipants() {
+      const names = isHe
+        ? ['אליס', 'בוב', 'צ\'ארלי', 'דיאנה', 'איב', 'פרנק', 'גרייס']
+        : ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace'];
+
+      const keys = [...this.validKeys].map(String);
+      for (let i = keys.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [keys[i], keys[j]] = [keys[j], keys[i]];
+      }
+
+      this.participants = names.map((name, i) => ({
+        id: i + 1,
+        name,
+        key: ''
+      }));
+      this.nextId = names.length;
+
+      this.$nextTick(() => {
+        this.participants.forEach((p, i) => {
+          p.key = keys[i % keys.length];
+        });
+      });
+    },
+
     getInitials(name) {
       if (!name) return '?';
       return name.trim().charAt(0).toUpperCase();

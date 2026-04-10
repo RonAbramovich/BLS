@@ -184,6 +184,9 @@
         <button class="btn-primary btn-success" style="margin-bottom:16px;" @click="addParticipant()">
           + הוסף משתתף
         </button>
+        <button class="btn-primary btn-demo" style="margin-bottom:16px;" @click="fillDemoParticipants()" :disabled="!validKeys.length">
+          הדגמה מהירה (7 משתתפים)
+        </button>
 
         <button class="btn-primary" @click="generateAggregatedSignature()" :disabled="loading || !canSubmit">
           חשב חתימות מצטברות ואמת

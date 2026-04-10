@@ -183,6 +183,9 @@
         <button class="btn-primary btn-success" style="margin-bottom:16px;" @click="addParticipant()">
           + Add Participant
         </button>
+        <button class="btn-primary btn-demo" style="margin-bottom:16px;" @click="fillDemoParticipants()" :disabled="!validKeys.length">
+          Quick Demo (7 Participants)
+        </button>
 
         <button class="btn-primary" @click="generateAggregatedSignature()" :disabled="loading || !canSubmit">
           Compute Aggregated Signatures &amp; Verify
