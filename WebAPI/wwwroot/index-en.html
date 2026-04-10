@@ -1,591 +1,382 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BLS Signature - Interactive Calculator</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        .language-switch {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-        }
-
-        .language-switch a {
-            color: white;
-            text-decoration: none;
-            background: rgba(255,255,255,0.2);
-            padding: 8px 16px;
-            border-radius: 20px;
-            transition: background 0.3s;
-        }
-
-        .language-switch a:hover {
-            background: rgba(255,255,255,0.3);
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-        .input-section {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-        }
-
-        .input-section h2 {
-            color: #667eea;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .form-group small {
-            display: block;
-            margin-top: 5px;
-            color: #666;
-            font-size: 0.9em;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.1em;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            width: 100%;
-            font-weight: 600;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .results-section {
-            margin-top: 30px;
-        }
-
-        .step {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            transition: all 0.3s;
-        }
-
-        .step:hover {
-            border-color: #667eea;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
-        }
-
-        .step-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .step-number {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.2em;
-            margin-right: 15px;
-        }
-
-        .step-title {
-            flex: 1;
-            font-size: 1.2em;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .step-result {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .final-result {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 10px;
-            margin-top: 25px;
-            text-align: center;
-        }
-
-        .final-result.failed {
-            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-        }
-
-        .final-result h3 {
-            font-size: 1.8em;
-            margin-bottom: 15px;
-        }
-
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .error-message {
-            background: #ffe0e0;
-            color: #cc0000;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .detail-section {
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 2px solid #e0e0e0;
-        }
-
-        .detail-section h3 {
-            color: #667eea;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .detail-item {
-            margin-bottom: 12px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 6px;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .detail-value {
-            color: #666;
-            font-family: 'Courier New', monospace;
-            word-break: break-all;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BLS Signature - Interactive Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="language-switch">
-        <a href="aggregated-en.html">Aggregated</a>
-        <a href="index.html">עברית</a>
-    </div>
+  <div x-data="blsApp('en')">
 
-    <div class="container">
-        <div class="header">
-            <h1>Interactive BLS Signature</h1>
-            <p>Pairing-Based Cryptography on Elliptic Curves</p>
+    <!-- Navigation -->
+    <nav class="nav-pills">
+      <a class="nav-pill" href="aggregated-en.html">Aggregated Signature</a>
+      <a class="nav-pill" href="index.html">עברית</a>
+    </nav>
+
+    <!-- Header -->
+    <header class="app-header">
+      <h1>Interactive BLS Signature</h1>
+      <p class="subtitle">Pairing-Based Cryptography on Elliptic Curves</p>
+    </header>
+
+    <div class="app-container">
+
+      <!-- Curve header with animated SVG + KaTeX -->
+      <div class="curve-header">
+        <div class="curve-svg-container">
+          <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 5,30 C 5,18 12,8 24,6 C 38,4 54,14 54,30 C 54,46 38,56 24,54 C 12,52 5,42 5,30" fill="none" stroke="#6366f1" stroke-width="2" class="curve-line"/>
+            <circle r="3" fill="#818cf8">
+              <animateMotion dur="4s" repeatCount="indefinite" path="M 5,30 C 5,18 12,8 24,6 C 38,4 54,14 54,30 C 54,46 38,56 24,54 C 12,52 5,42 5,30"/>
+            </circle>
+          </svg>
+        </div>
+        <div class="math-block" data-katex="y^2 = x^3 + Ax + B \pmod{q}"></div>
+        <div class="header-text">
+          <h2>BLS Digital Signature</h2>
+          <p>Tate pairing verification over E(F<sub>q</sub>)</p>
+        </div>
+      </div>
+
+      <!-- Error message -->
+      <template x-if="error">
+        <div class="error-message" x-text="'Error: ' + error"></div>
+      </template>
+
+      <!-- Loading -->
+      <div class="loading-container" x-show="loading" x-cloak>
+        <div class="spinner"></div>
+        <p>Computing...</p>
+      </div>
+
+      <!-- STEP 1: Curve Parameters -->
+      <div class="section-card">
+        <h2>Step 1: Select Curve Parameters</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="primeQ">Prime q</label>
+            <input class="form-input" type="text" id="primeQ" x-model="q" placeholder="e.g., 43">
+            <span class="form-hint">Must be prime and q ≡ 3 (mod 4)</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="paramA">Parameter A</label>
+            <input class="form-input" type="text" id="paramA" x-model="a" placeholder="e.g., 1">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="paramB">Parameter B</label>
+            <input class="form-input" type="text" id="paramB" x-model="b" placeholder="e.g., 8">
+            <span class="form-hint">4A³ + 27B² ≠ 0</span>
+          </div>
+        </div>
+        <button class="btn-primary" @click="showConstraints()" :disabled="loading">
+          Validate Parameters &amp; Show Private Key Constraints
+        </button>
+      </div>
+
+      <!-- STEP 2: Constraints -->
+      <div x-show="constraints" x-cloak x-ref="constraintsSection">
+        <h2 class="results-heading">Step 2: Private Key Constraints</h2>
+
+        <div class="detail-section">
+          <h3>Curve Details</h3>
+          <div class="detail-item">
+            <div class="detail-label">Prime (p):</div>
+            <div class="detail-value" x-text="constraints?.prime"></div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Curve Equation:</div>
+            <div class="detail-value" x-text="constraints?.curveEquation"></div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Group Order:</div>
+            <div class="detail-value" x-text="constraints?.groupOrder"></div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Generator Order (r):</div>
+            <div class="detail-value" x-text="constraints?.r"></div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Generator Point:</div>
+            <div class="detail-value" x-text="constraints?.generatorPoint"></div>
+          </div>
         </div>
 
-        <div class="content">
-            <!-- STEP 1: Curve Parameters -->
-            <div class="input-section">
-                <h2>Step 1: Select Curve Parameters</h2>
-
-                <div class="form-group">
-                    <label for="primeQ">Prime q (Field Characteristic):</label>
-                    <input type="text" id="primeQ" value="43" placeholder="e.g., 43">
-                    <small>Must be prime and q ≡ 3 (mod 4)</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="paramA">Parameter A (for y² = x³ + Ax + B):</label>
-                    <input type="text" id="paramA" value="1" placeholder="e.g., 1">
-                </div>
-
-                <div class="form-group">
-                    <label for="paramB">Parameter B (for y² = x³ + Ax + B):</label>
-                    <input type="text" id="paramB" value="8" placeholder="e.g., 8">
-                    <small>Must satisfy: 4A³ + 27B² ≠ 0</small>
-                </div>
-
-                <button class="btn" onclick="showPrivateKeyConstraints()" id="validateBtn">
-                    Validate Parameters & Show Private Key Constraints
-                </button>
-            </div>
-
-            <div id="loadingSection" class="hidden">
-                <div class="loader"></div>
-                <p style="text-align: center; color: #666;">Computing...</p>
-            </div>
-
-            <div id="errorSection" class="hidden error-message"></div>
-
-            <div id="constraintsSection" class="results-section hidden"></div>
-
-            <!-- STEP 3: Private Key Selection & Signature -->
-            <div id="signatureSection" class="input-section hidden" style="margin-top: 20px;">
-                <h2>Step 3: Select Private Key and Compute Signature</h2>
-
-                <div class="form-group">
-                    <label>Private Key Input Mode:</label>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: inline-flex; align-items: center; margin-right: 20px; cursor: pointer;">
-                            <input type="radio" name="keyInputMode" value="select" checked onchange="onKeyInputModeChange()" style="width: auto; margin-right: 8px;">
-                            Select from valid keys
-                        </label>
-                        <label style="display: inline-flex; align-items: center; cursor: pointer;">
-                            <input type="radio" name="keyInputMode" value="manual" onchange="onKeyInputModeChange()" style="width: auto; margin-right: 8px;">
-                            Enter manually
-                        </label>
-                    </div>
-                </div>
-
-                <div id="selectKeyMode" class="form-group">
-                    <label for="privateKeySelect">Select Valid Private Key:</label>
-                    <select id="privateKeySelect" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
-                        <option value="">-- Select valid private key --</option>
-                    </select>
-                </div>
-
-                <div id="manualKeyMode" class="form-group hidden">
-                    <label for="privateKeyManual">Enter Private Key:</label>
-                    <input type="text" id="privateKeyManual" placeholder="e.g., 5">
-                    <small>Ensure the key is valid (sk > 0 and sk mod r ≠ 0)</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="message">Message to Sign:</label>
-                    <input type="text" id="message" value="hello" placeholder="Enter any message">
-                </div>
-
-                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
-                    <input type="checkbox" id="includeDetailedReport" checked style="width: auto; cursor: pointer;">
-                    <label for="includeDetailedReport" style="margin: 0; cursor: pointer;">Show detailed calculation report</label>
-                </div>
-
-                <button class="btn" onclick="generateSignature()" id="submitBtn">
-                    Calculate Signature & Verify
-                </button>
-            </div>
-
-            <div id="resultsSection" class="results-section hidden"></div>
+        <div class="detail-section">
+          <h3 x-text="constraints?.constraintDescription"></h3>
+          <div class="detail-item">
+            <div class="detail-label">Validation Rule:</div>
+            <div class="detail-value" style="white-space:pre-wrap;" x-text="constraints?.validationRule"></div>
+          </div>
         </div>
+
+        <div class="detail-section">
+          <h3>Detailed Explanation</h3>
+          <div class="detail-item">
+            <div class="detail-value" style="white-space:pre-wrap;" x-text="constraints?.explanation"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Private Key & Signature -->
+      <div class="section-card" x-show="constraints" x-cloak>
+        <h2>Step 3: Select Private Key and Compute Signature</h2>
+
+        <div class="form-group">
+          <label class="form-label">Private Key Input Mode</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" value="select" x-model="keyMode"> Select from valid keys
+            </label>
+            <label class="radio-label">
+              <input type="radio" value="manual" x-model="keyMode"> Enter manually
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group" x-show="keyMode === 'select'">
+          <label class="form-label">Select Valid Private Key</label>
+          <select class="form-select" x-model="privateKeySelect">
+            <option value="">-- Select valid private key --</option>
+            <template x-for="k in validKeys" :key="k">
+              <option :value="k" x-text="k"></option>
+            </template>
+          </select>
+        </div>
+
+        <div class="form-group" x-show="keyMode === 'manual'">
+          <label class="form-label">Enter Private Key</label>
+          <input class="form-input" type="text" x-model="privateKeyManual" placeholder="e.g., 5">
+          <span class="form-hint">Ensure the key is valid (sk &gt; 0 and sk mod r ≠ 0)</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Message to Sign</label>
+          <input class="form-input" type="text" x-model="message" placeholder="Enter any message">
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" x-model="includeDetailedReport"> Show detailed calculation report
+          </label>
+        </div>
+
+        <button class="btn-primary" @click="generateSignature()" :disabled="loading">
+          Calculate Signature &amp; Verify
+        </button>
+      </div>
+
+      <!-- RESULTS -->
+      <div x-show="result" x-cloak x-ref="resultsSection">
+        <h2 class="results-heading">Step-by-Step Calculation Results</h2>
+
+        <!-- Tabs -->
+        <template x-if="result?.detailedReport">
+          <div class="tabs">
+            <button class="tab-btn" :class="{ active: activeTab === 'steps' }" @click="activeTab = 'steps'">Calculation Steps</button>
+            <button class="tab-btn" :class="{ active: activeTab === 'detailed' }" @click="activeTab = 'detailed'">Detailed Report</button>
+            <button class="tab-btn" :class="{ active: activeTab === 'summary' }" @click="activeTab = 'summary'">Summary</button>
+          </div>
+        </template>
+
+        <!-- Steps tab -->
+        <div x-show="activeTab === 'steps'">
+          <template x-for="step in result?.steps" :key="step.stepNumber">
+            <div class="step-card">
+              <div class="step-head">
+                <span class="step-badge" x-text="step.stepNumber"></span>
+                <span class="step-title" x-html="step.description"></span>
+              </div>
+              <div class="step-result" x-html="step.result"></div>
+            </div>
+          </template>
+
+          <div class="verify-badge" :class="{ failed: !result?.verificationPassed }">
+            <div class="pulse-ring"></div>
+            <div class="lock-icon" x-text="result?.verificationPassed ? '🔒' : '🔓'"></div>
+            <div class="verify-text" x-text="result?.verificationPassed ? 'Signature Valid!' : 'Signature Invalid!'"></div>
+            <div class="verify-sub" x-text="result?.verificationPassed ? 'Bob\'s verification matches Alice\'s signature' : 'Bob\'s verification does not match Alice\'s signature'"></div>
+            <div class="verify-formula" data-katex="e_r(a \cdot H(m),\, Q) \stackrel{?}{=} e_r(H(m),\, a \cdot Q)"></div>
+          </div>
+        </div>
+
+        <!-- Detailed tab -->
+        <div x-show="activeTab === 'detailed'" x-cloak>
+
+          <!-- Step 3: Hashing -->
+          <template x-if="result?.detailedReport?.messageHashingDetails">
+            <div class="detail-section">
+              <h3>Step 3: Hash Message to Curve Point</h3>
+              <div class="detail-item">
+                <div class="detail-label">Original Message:</div>
+                <div class="detail-value" x-text="result.detailedReport.messageHashingDetails.originalMessage"></div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Encoding Used:</div>
+                <div class="detail-value" x-text="result.detailedReport.messageHashingDetails.encodingUsed"></div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Bytes (Hex):</div>
+                <div class="detail-value" x-text="result.detailedReport.messageHashingDetails.messageBytesHex"></div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Encoded Integer (mod p):</div>
+                <div class="detail-value" x-text="result.detailedReport.messageHashingDetails.encodedInteger"></div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Cofactor Used:</div>
+                <div class="detail-value" x-text="result.detailedReport.messageHashingDetails.cofactorUsed"></div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Trials Until Success:</div>
+                <div class="detail-value" x-text="result.detailedReport.messageHashingDetails.trialsUntilSuccess"></div>
+              </div>
+
+              <h4 style="margin:16px 0 8px;color:var(--text-secondary);font-size:0.9rem;">Hash Attempts:</h4>
+              <template x-for="(att, i) in result.detailedReport.messageHashingDetails.attempts.slice(0, 20)" :key="i">
+                <div class="attempt" :class="{ success: att.isQuadraticResidue }">
+                  <strong x-text="'Increment ' + att.increment + ':'"></strong>
+                  x = <span x-text="att.candidateX"></span><br>
+                  z = x³ + Ax + B = <span x-text="att.computedZ"></span><br>
+                  <span x-show="att.isQuadraticResidue">✅ Quadratic residue! y = <span x-text="att.squareRootY"></span></span>
+                  <span x-show="!att.isQuadraticResidue">❌ Not a quadratic residue</span>
+                </div>
+              </template>
+              <p x-show="result.detailedReport.messageHashingDetails.attempts.length > 20" style="margin-top:8px;color:var(--text-dim);font-size:0.82rem;">
+                <em>Showing first 20 of <span x-text="result.detailedReport.messageHashingDetails.attempts.length"></span> attempts...</em>
+              </p>
+
+              <div class="detail-item success-bg" style="margin-top:12px;">
+                <div class="detail-label">✅ Final Point (after cofactor clearing):</div>
+                <div class="detail-value">P = (<span x-text="result.detailedReport.messageHashingDetails.finalPointX"></span>, <span x-text="result.detailedReport.messageHashingDetails.finalPointY"></span>)</div>
+              </div>
+            </div>
+          </template>
+
+          <!-- Step 7: Torsion -->
+          <template x-if="result?.detailedReport?.torsionPointDetails">
+            <div class="detail-section">
+              <h3>Step 7: Find Torsion Point Q</h3>
+              <div class="detail-item">
+                <div class="detail-label">Target Order (r):</div>
+                <div class="detail-value" x-text="result.detailedReport.torsionPointDetails.targetOrder"></div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Extension Field:</div>
+                <div class="detail-value">F<sub x-text="result.detailedReport.torsionPointDetails.extensionFieldSize"></sub></div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Cofactor Multiplier:</div>
+                <div class="detail-value" x-text="result.detailedReport.torsionPointDetails.cofactorMultiplier"></div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Linearly Independent:</div>
+                <div class="detail-value" x-text="result.detailedReport.torsionPointDetails.isLinearlyIndependent ? '✅ Yes' : '❌ No'"></div>
+              </div>
+              <div class="detail-item success-bg">
+                <div class="detail-label">✅ Final Torsion Point Q:</div>
+                <div class="detail-value">
+                  X (degree <span x-text="result.detailedReport.torsionPointDetails.pointX_Degree"></span>): <span x-text="result.detailedReport.torsionPointDetails.finalPointX_Polynomial"></span><br>
+                  Y (degree <span x-text="result.detailedReport.torsionPointDetails.pointY_Degree"></span>): <span x-text="result.detailedReport.torsionPointDetails.finalPointY_Polynomial"></span>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- Step 8: Signature -->
+          <template x-if="result?.detailedReport?.signatureCalculationDetails">
+            <div class="detail-section">
+              <h3>Step 8: Alice's Signature Calculation</h3>
+              <div class="detail-item">
+                <div class="detail-label">Private Key (a):</div>
+                <div class="detail-value" x-text="result.detailedReport.signatureCalculationDetails.privateKey"></div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Message Hash Point P = H(m):</div>
+                <div class="detail-value">(<span x-text="result.detailedReport.signatureCalculationDetails.messageHashPoint_X"></span>, <span x-text="result.detailedReport.signatureCalculationDetails.messageHashPoint_Y"></span>)</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Scalar Multiplication a·P:</div>
+                <div class="detail-value">(<span x-text="result.detailedReport.signatureCalculationDetails.multipliedPoint_X"></span>, <span x-text="result.detailedReport.signatureCalculationDetails.multipliedPoint_Y"></span>)</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Torsion Point Q:</div>
+                <div class="detail-value">
+                  X: <span x-text="result.detailedReport.signatureCalculationDetails.torsionPoint_X"></span><br>
+                  Y: <span x-text="result.detailedReport.signatureCalculationDetails.torsionPoint_Y"></span>
+                </div>
+              </div>
+              <div class="detail-item success-bg">
+                <div class="detail-label">✅ Signature = e<sub>r</sub>(a·H(m), Q):</div>
+                <div class="detail-value" x-text="result.detailedReport.signatureCalculationDetails.finalSignature"></div>
+              </div>
+            </div>
+          </template>
+
+          <!-- Step 9: Verification -->
+          <template x-if="result?.detailedReport?.verificationCalculationDetails">
+            <div class="detail-section">
+              <h3>Step 9: Bob's Verification Calculation</h3>
+              <div class="detail-item">
+                <div class="detail-label">Private Key (a):</div>
+                <div class="detail-value" x-text="result.detailedReport.verificationCalculationDetails.privateKey"></div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Message Hash Point P = H(m):</div>
+                <div class="detail-value">(<span x-text="result.detailedReport.verificationCalculationDetails.messageHashPoint_X"></span>, <span x-text="result.detailedReport.verificationCalculationDetails.messageHashPoint_Y"></span>)</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Torsion Point Q:</div>
+                <div class="detail-value">
+                  X: <span x-text="result.detailedReport.verificationCalculationDetails.torsionPoint_X"></span><br>
+                  Y: <span x-text="result.detailedReport.verificationCalculationDetails.torsionPoint_Y"></span>
+                </div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Scalar Multiplication a·Q:</div>
+                <div class="detail-value">(<span x-text="result.detailedReport.verificationCalculationDetails.multipliedPoint_X"></span>, <span x-text="result.detailedReport.verificationCalculationDetails.multipliedPoint_Y"></span>)</div>
+              </div>
+              <div class="detail-item success-bg">
+                <div class="detail-label">✅ Verification = e<sub>r</sub>(H(m), a·Q):</div>
+                <div class="detail-value" x-text="result.detailedReport.verificationCalculationDetails.finalVerification"></div>
+              </div>
+              <div class="detail-item" :class="result.detailedReport.verificationCalculationDetails.signatureMatches ? 'success-bg' : 'error-bg'">
+                <div class="detail-label">Signature Match:</div>
+                <div class="detail-value" x-text="result.detailedReport.verificationCalculationDetails.signatureMatches ? '✅ Verified' : '❌ Failed'"></div>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Summary tab -->
+        <div x-show="activeTab === 'summary'" x-cloak>
+          <div class="detail-section">
+            <h3>Signature Summary</h3>
+            <div class="detail-item">
+              <div class="detail-label">Alice's Signature:</div>
+              <div class="detail-value" x-text="result?.aliceSignature"></div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Bob's Verification:</div>
+              <div class="detail-value" x-text="result?.bobVerification"></div>
+            </div>
+            <div class="detail-item" :class="result?.verificationPassed ? 'success-bg' : 'error-bg'">
+              <div class="detail-label">Verification Status:</div>
+              <div class="detail-value" x-text="result?.verificationPassed ? '✅ Passed' : '❌ Failed'"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </div>
 
-    <script>
-        async function showPrivateKeyConstraints() {
-            const validateBtn = document.getElementById('validateBtn');
-            const loadingSection = document.getElementById('loadingSection');
-            const errorSection = document.getElementById('errorSection');
-            const constraintsSection = document.getElementById('constraintsSection');
-
-            // Clear previous results
-            constraintsSection.classList.add('hidden');
-            errorSection.classList.add('hidden');
-            constraintsSection.innerHTML = '';
-
-            // Show loading
-            validateBtn.disabled = true;
-            loadingSection.classList.remove('hidden');
-
-            try {
-                const response = await fetch('/api/aggregated/private-key-constraints', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        PRIME_Q: document.getElementById('primeQ').value,
-                        A: document.getElementById('paramA').value,
-                        B: document.getElementById('paramB').value,
-                        Language: 'en'
-                    })
-                });
-
-                const data = await response.json();
-
-                if (!data.success) {
-                    throw new Error(data.errorMessage || 'Unknown error');
-                }
-
-                displayConstraints(data);
-            } catch (error) {
-                errorSection.textContent = `Error: ${error.message}`;
-                errorSection.classList.remove('hidden');
-            } finally {
-                validateBtn.disabled = false;
-                loadingSection.classList.add('hidden');
-            }
-        }
-
-        function displayConstraints(data) {
-            const constraintsSection = document.getElementById('constraintsSection');
-            let html = '<h2 style="color: #667eea; margin-bottom: 20px;">Step 2: Private Key Constraints</h2>';
-
-            html += `
-                <div class="detail-section">
-                    <h3>Curve Details</h3>
-                    <div class="detail-item">
-                        <div class="detail-label">Prime (p):</div>
-                        <div class="detail-value">${data.prime}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Curve Equation:</div>
-                        <div class="detail-value">${data.curveEquation}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Group Order:</div>
-                        <div class="detail-value">${data.groupOrder}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Generator Order (r):</div>
-                        <div class="detail-value">${data.r}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Generator Point:</div>
-                        <div class="detail-value">${data.generatorPoint}</div>
-                    </div>
-                </div>
-
-                <div class="detail-section">
-                    <h3>${data.constraintDescription}</h3>
-                    <div class="detail-item">
-                        <div class="detail-label">Validation Rule:</div>
-                        <div class="detail-value" style="white-space: pre-wrap;">${data.validationRule}</div>
-                    </div>
-                </div>
-
-                <div class="detail-section">
-                    <h3>Detailed Explanation</h3>
-                    <div class="detail-item">
-                        <div class="detail-value" style="white-space: pre-wrap;">${data.explanation}</div>
-                    </div>
-                </div>
-
-            `;
-
-            constraintsSection.innerHTML = html;
-            constraintsSection.classList.remove('hidden');
-
-            // Show Step 3 section
-            document.getElementById('signatureSection').classList.remove('hidden');
-
-            // Populate the valid keys dropdown
-            const keySelect = document.getElementById('privateKeySelect');
-            keySelect.innerHTML = '<option value="">-- Select valid private key --</option>';
-            data.validKeyExamples.forEach(key => {
-                keySelect.innerHTML += `<option value="${key}">${key}</option>`;
-            });
-
-            // Store valid keys for validation
-            window.validPrivateKeys = data.validKeyExamples;
-
-            // Scroll to constraints
-            constraintsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        function onKeyInputModeChange() {
-            const mode = document.querySelector('input[name="keyInputMode"]:checked').value;
-            const selectMode = document.getElementById('selectKeyMode');
-            const manualMode = document.getElementById('manualKeyMode');
-
-            if (mode === 'select') {
-                selectMode.classList.remove('hidden');
-                manualMode.classList.add('hidden');
-            } else {
-                selectMode.classList.add('hidden');
-                manualMode.classList.remove('hidden');
-            }
-        }
-
-        function getSelectedPrivateKey() {
-            const mode = document.querySelector('input[name="keyInputMode"]:checked').value;
-            if (mode === 'select') {
-                return document.getElementById('privateKeySelect').value;
-            } else {
-                return document.getElementById('privateKeyManual').value;
-            }
-        }
-
-        async function generateSignature() {
-            const submitBtn = document.getElementById('submitBtn');
-            const loadingSection = document.getElementById('loadingSection');
-            const errorSection = document.getElementById('errorSection');
-            const resultsSection = document.getElementById('resultsSection');
-
-            // Clear previous results
-            resultsSection.classList.add('hidden');
-            errorSection.classList.add('hidden');
-            resultsSection.innerHTML = '';
-
-            // Show loading
-            submitBtn.disabled = true;
-            loadingSection.classList.remove('hidden');
-
-            try {
-                const response = await fetch('/api/bls/sign', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        q: document.getElementById('primeQ').value,
-                        a: document.getElementById('paramA').value,
-                        b: document.getElementById('paramB').value,
-                        privateKey: getSelectedPrivateKey(),
-                        message: document.getElementById('message').value,
-                        language: 'en'
-                    })
-                });
-
-                const data = await response.json();
-
-                if (!data.success) {
-                    throw new Error(data.errorMessage || 'Unknown error');
-                }
-
-                displayResults(data);
-            } catch (error) {
-                errorSection.textContent = `Error: ${error.message}`;
-                errorSection.classList.remove('hidden');
-            } finally {
-                submitBtn.disabled = false;
-                loadingSection.classList.add('hidden');
-            }
-        }
-
-        function displayResults(data) {
-            const resultsSection = document.getElementById('resultsSection');
-            let html = '<h2 style="color: #667eea; margin-bottom: 20px;">Step-by-Step Calculation Results</h2>';
-
-            // Display each step
-            data.steps.forEach(step => {
-                html += `
-                    <div class="step">
-                        <div class="step-header">
-                            <div class="step-number">${step.stepNumber}</div>
-                            <div class="step-title">${step.description}</div>
-                        </div>
-                        <div class="step-result">${step.result}</div>
-                    </div>
-                `;
-            });
-
-            // Display final result
-            const passedClass = data.verificationPassed ? '' : 'failed';
-            const statusText = data.verificationPassed ? 'Signature Valid!' : 'Signature Invalid!';
-            
-            html += `
-                <div class="final-result ${passedClass}">
-                    <h3>${statusText}</h3>
-                    <p style="margin-top: 15px; font-size: 1.1em;">
-                        ${data.verificationPassed ? 'Bob\'s verification matches Alice\'s signature' : 'Bob\'s verification does not match Alice\'s signature'}
-                    </p>
-                </div>
-            `;
-
-            resultsSection.innerHTML = html;
-            resultsSection.classList.remove('hidden');
-
-            // Scroll to results
-            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    </script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="js/bls-ui.js"></script>
 </body>
 </html>

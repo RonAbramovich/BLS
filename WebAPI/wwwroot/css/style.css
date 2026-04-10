@@ -1,0 +1,680 @@
+/* ==========================================================================
+   BLS Interactive Demo — Design System (Interactive Viz)
+   Dark slate dashboard with indigo accents, KaTeX math, JetBrains Mono
+   ========================================================================== */
+
+/* --- Custom Properties -------------------------------------------------- */
+:root {
+  --bg-body:       #0f172a;
+  --bg-surface:    rgba(30, 41, 59, 0.6);
+  --bg-input:      rgba(30, 41, 59, 0.8);
+  --bg-deep:       rgba(15, 23, 42, 0.8);
+
+  --accent:        #6366f1;
+  --accent-light:  #818cf8;
+  --accent-hover:  #4f46e5;
+  --accent-glow:   rgba(99, 102, 241, 0.15);
+  --accent-border: rgba(99, 102, 241, 0.12);
+  --accent-bg:     rgba(99, 102, 241, 0.06);
+
+  --success:       #10b981;
+  --success-light: #34d399;
+  --success-bg:    rgba(16, 185, 129, 0.08);
+  --success-border:rgba(16, 185, 129, 0.25);
+
+  --error:         #f43f5e;
+  --error-bg:      rgba(244, 63, 94, 0.1);
+  --error-border:  rgba(244, 63, 94, 0.3);
+
+  --text-primary:  #e2e8f0;
+  --text-secondary:#94a3b8;
+  --text-muted:    #64748b;
+  --text-dim:      #475569;
+  --text-crypto:   #c7d2fe;
+  --text-input:    #334155;
+
+  --border-subtle: rgba(99, 102, 241, 0.12);
+  --border-accent: rgba(99, 102, 241, 0.2);
+
+  --radius-sm:  6px;
+  --radius-md:  8px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+
+  --font-ui:    'Inter', system-ui, sans-serif;
+  --font-mono:  'JetBrains Mono', 'Courier New', monospace;
+}
+
+/* --- Reset -------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+[x-cloak] { display: none !important; }
+
+/* --- Base --------------------------------------------------------------- */
+body {
+  font-family: var(--font-ui);
+  background: var(--bg-body);
+  color: var(--text-primary);
+  min-height: 100vh;
+  padding: 0;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- App container ------------------------------------------------------ */
+.app-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px 64px;
+}
+
+/* --- Header ------------------------------------------------------------- */
+.app-header {
+  padding: 32px 24px 24px;
+  text-align: center;
+  position: relative;
+}
+
+.app-header h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--accent-light);
+  margin-bottom: 4px;
+}
+
+.app-header .subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* --- Navigation pills --------------------------------------------------- */
+.nav-pills {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  flex-wrap: wrap;
+}
+
+.nav-pill {
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  transition: background 0.2s, color 0.2s;
+}
+
+.nav-pill:hover {
+  background: var(--accent-bg);
+  color: var(--accent-light);
+}
+
+/* --- Curve header block ------------------------------------------------- */
+.curve-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--accent-bg);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-lg);
+  margin-bottom: 28px;
+}
+
+.curve-header .math-block {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  flex-shrink: 0;
+}
+
+.curve-header .header-text h2 {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.curve-header .header-text p {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+
+/* Animated SVG curve in header */
+.curve-svg-container {
+  flex-shrink: 0;
+}
+
+.curve-svg-container svg {
+  width: 60px;
+  height: 60px;
+}
+
+.curve-line {
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+  animation: draw-curve 3s ease forwards;
+}
+
+@keyframes draw-curve {
+  to { stroke-dashoffset: 0; }
+}
+
+/* --- Section card ------------------------------------------------------- */
+.section-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.section-card h2 {
+  color: var(--accent-light);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+/* --- Form elements ------------------------------------------------------ */
+.form-label {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-sm);
+  color: var(--text-crypto);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.form-input::placeholder { color: var(--text-input); }
+
+.form-hint {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.form-row > .form-group { flex: 1; }
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+/* Radio + checkbox styling */
+.radio-group {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.radio-label,
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.radio-label input,
+.checkbox-label input {
+  width: auto;
+  accent-color: var(--accent);
+}
+
+/* --- Buttons ------------------------------------------------------------ */
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-success {
+  background: var(--success);
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #059669;
+}
+
+.btn-danger {
+  background: var(--error);
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  width: auto;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #e11d48;
+}
+
+/* --- Tabs --------------------------------------------------------------- */
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid var(--border-subtle);
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.tab-btn:hover {
+  color: var(--accent-light);
+}
+
+.tab-btn.active {
+  color: var(--accent-light);
+  border-bottom-color: var(--accent);
+}
+
+/* --- Step cards --------------------------------------------------------- */
+.step-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--accent-border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 12px;
+  animation: fade-in 0.3s ease;
+}
+
+[dir="rtl"] .step-card {
+  border-left: 1px solid var(--accent-border);
+  border-right: 3px solid var(--accent);
+}
+
+.step-card .step-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.step-title {
+  color: var(--text-crypto);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.step-result {
+  background: var(--bg-deep);
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  color: var(--accent-light);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  direction: ltr;
+  text-align: left;
+}
+
+/* --- Detail sections ---------------------------------------------------- */
+.detail-section {
+  background: var(--bg-surface);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.detail-section h3 {
+  color: var(--accent-light);
+  font-size: 0.95rem;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.detail-item {
+  margin-bottom: 10px;
+  padding: 10px;
+  background: var(--bg-deep);
+  border-radius: var(--radius-sm);
+}
+
+.detail-item.success-bg {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.detail-item.error-bg {
+  background: var(--error-bg);
+}
+
+.detail-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+}
+
+.detail-value {
+  color: var(--text-crypto);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  word-break: break-all;
+  direction: ltr;
+  text-align: left;
+}
+
+/* --- Hash attempt nodes ------------------------------------------------- */
+.attempt {
+  background: var(--bg-deep);
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+[dir="rtl"] .attempt {
+  border-left: none;
+  border-right: 3px solid var(--text-dim);
+}
+
+.attempt.success {
+  border-left-color: var(--success);
+  background: rgba(16, 185, 129, 0.06);
+}
+
+[dir="rtl"] .attempt.success {
+  border-right-color: var(--success);
+}
+
+/* --- Verification badge ------------------------------------------------- */
+.verify-badge {
+  margin-top: 20px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  animation: fade-in 0.4s ease;
+}
+
+.verify-badge.failed {
+  background: var(--error-bg);
+  border-color: var(--error-border);
+}
+
+.verify-badge .pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  border: 2px solid rgba(16, 185, 129, 0.3);
+  border-radius: 50%;
+  animation: pulse-ring 2s ease-out infinite;
+  pointer-events: none;
+}
+
+.verify-badge.failed .pulse-ring {
+  border-color: rgba(244, 63, 94, 0.3);
+}
+
+.verify-badge .lock-icon {
+  font-size: 1.6rem;
+  margin-bottom: 4px;
+}
+
+.verify-badge .verify-text {
+  color: var(--success-light);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.verify-badge.failed .verify-text {
+  color: var(--error);
+}
+
+.verify-badge .verify-sub {
+  color: rgba(52, 211, 153, 0.7);
+  font-size: 0.82rem;
+  margin-top: 6px;
+}
+
+.verify-badge.failed .verify-sub {
+  color: rgba(244, 63, 94, 0.7);
+}
+
+.verify-badge .verify-formula {
+  margin-top: 8px;
+}
+
+/* --- Individual signature cards (aggregated) ----------------------------- */
+.individual-signature {
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid var(--accent-border);
+  border-left: 4px solid var(--accent);
+  padding: 16px;
+  margin: 10px 0;
+  border-radius: var(--radius-md);
+}
+
+[dir="rtl"] .individual-signature {
+  border-left: 1px solid var(--accent-border);
+  border-right: 4px solid var(--accent);
+}
+
+.individual-signature h4 {
+  color: var(--accent-light);
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.individual-signature p {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+  font-family: var(--font-mono);
+}
+
+.individual-signature strong {
+  color: var(--text-crypto);
+}
+
+/* --- Participant cards -------------------------------------------------- */
+.participant-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.participant-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.participant-avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.participant-card .card-title {
+  color: var(--accent-light);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.participant-card .remove-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+
+[dir="rtl"] .participant-card .remove-btn {
+  right: auto;
+  left: 14px;
+}
+
+/* --- Loading spinner ---------------------------------------------------- */
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border-subtle);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 20px auto;
+}
+
+.loading-container {
+  text-align: center;
+  padding: 20px;
+}
+
+.loading-container p {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
+
+/* --- Error message ------------------------------------------------------ */
+.error-message {
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error);
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+/* --- Section heading (used in results) ---------------------------------- */
+.results-heading {
+  color: var(--accent-light);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 24px 0 14px;
+}
+
+/* --- Animations --------------------------------------------------------- */
+@keyframes pulse-ring {
+  0%   { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --- KaTeX overrides ---------------------------------------------------- */
+.katex { font-size: 0.95em; }
+
+[data-katex] {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* --- Responsive --------------------------------------------------------- */
+@media (max-width: 640px) {
+  .app-container { padding: 0 12px 40px; }
+  .app-header h1 { font-size: 1.35rem; }
+  .section-card { padding: 16px; }
+  .form-row { flex-direction: column; gap: 0; }
+  .curve-header { flex-direction: column; text-align: center; }
+  .nav-pills { gap: 6px; }
+}

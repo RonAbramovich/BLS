@@ -1,716 +1,227 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>חתימת BLS מצטברת - מחשבון אינטראקטיבי</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            direction: rtl;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        .language-switch {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-        }
-
-        .language-switch a {
-            color: white;
-            text-decoration: none;
-            background: rgba(255,255,255,0.2);
-            padding: 8px 16px;
-            border-radius: 20px;
-            transition: background 0.3s;
-            margin: 0 5px;
-        }
-
-        .language-switch a:hover {
-            background: rgba(255,255,255,0.3);
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-        .input-section {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-        }
-
-        .input-section h2 {
-            color: #667eea;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .form-group small {
-            display: block;
-            margin-top: 5px;
-            color: #666;
-            font-size: 0.9em;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.1em;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            width: 100%;
-            font-weight: 600;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            margin-top: 10px;
-            padding: 10px 20px;
-            font-size: 0.9em;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-            padding: 8px 16px;
-            font-size: 0.85em;
-            width: auto;
-        }
-
-        .participants-container {
-            margin-top: 20px;
-        }
-
-        .participant-card {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            position: relative;
-        }
-
-        .participant-card h3 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1.2em;
-        }
-
-        .remove-participant {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-        }
-
-        .add-participant-btn {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .results-section {
-            margin-top: 30px;
-        }
-
-        .step {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            transition: all 0.3s;
-        }
-
-        .step:hover {
-            border-color: #667eea;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
-        }
-
-        .step-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .step-number {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-
-        .step-title {
-            flex: 1;
-            margin-right: 15px;
-            font-size: 1.2em;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .step-result {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            color: #666;
-            white-space: pre-wrap;
-            direction: ltr;
-            text-align: left;
-        }
-
-        .individual-signature {
-            background: #e3f2fd;
-            border-right: 4px solid #2196f3;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 8px;
-        }
-
-        .individual-signature h4 {
-            color: #1976d2;
-            margin-bottom: 10px;
-        }
-
-        .final-result {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 10px;
-            margin-top: 25px;
-            text-align: center;
-        }
-
-        .final-result.failed {
-            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-        }
-
-        .final-result h3 {
-            font-size: 1.8em;
-            margin-bottom: 15px;
-        }
-
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .error-message {
-            background: #ffe0e0;
-            color: #cc0000;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .detail-section {
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 2px solid #e0e0e0;
-        }
-
-        .detail-section h3 {
-            color: #667eea;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .detail-item {
-            margin-bottom: 12px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 6px;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .detail-value {
-            color: #666;
-            font-family: 'Courier New', monospace;
-            word-break: break-all;
-            direction: ltr;
-            text-align: left;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>חתימת BLS מצטברת - מחשבון אינטראקטיבי</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/rtl.css">
 </head>
 <body>
-    <div class="language-switch">
-        <a href="index.html">חתימה רגילה</a>
-        <a href="aggregated-en.html">English</a>
-    </div>
+  <div x-data="aggregatedApp('he')">
 
-    <div class="container">
-        <div class="header">
-            <h1>חתימת BLS מצטברת</h1>
-            <p>הדגמת צבירת חתימות מרובות ואימות משותף</p>
+    <!-- Navigation -->
+    <nav class="nav-pills">
+      <a class="nav-pill" href="index.html">חתימה רגילה</a>
+      <a class="nav-pill" href="aggregated-en.html">English</a>
+    </nav>
+
+    <!-- Header -->
+    <header class="app-header">
+      <h1>חתימת BLS מצטברת</h1>
+      <p class="subtitle">הדגמת צבירת חתימות מרובות ואימות משותף</p>
+    </header>
+
+    <div class="app-container">
+
+      <!-- Curve header -->
+      <div class="curve-header">
+        <div class="curve-svg-container">
+          <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 5,30 C 5,18 12,8 24,6 C 38,4 54,14 54,30 C 54,46 38,56 24,54 C 12,52 5,42 5,30" fill="none" stroke="#6366f1" stroke-width="2" class="curve-line"/>
+            <circle r="3" fill="#818cf8">
+              <animateMotion dur="4s" repeatCount="indefinite" path="M 5,30 C 5,18 12,8 24,6 C 38,4 54,14 54,30 C 54,46 38,56 24,54 C 12,52 5,42 5,30"/>
+            </circle>
+          </svg>
+        </div>
+        <div class="math-block" data-katex="y^2 = x^3 + Ax + B \pmod{q}"></div>
+        <div class="header-text">
+          <h2>חתימה מצטברת BLS</h2>
+          <p>צבירת חתימות מרובות לאימות יחיד</p>
+        </div>
+      </div>
+
+      <!-- Error message -->
+      <template x-if="error">
+        <div class="error-message" x-text="error"></div>
+      </template>
+
+      <!-- Loading -->
+      <div class="loading-container" x-show="loading" x-cloak>
+        <div class="spinner"></div>
+        <p>מבצע חישובים...</p>
+      </div>
+
+      <!-- STEP 1: Curve Parameters -->
+      <div class="section-card">
+        <h2>שלב 1: בחר פרמטרי עקומה</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">מספר ראשוני q</label>
+            <input class="form-input" type="text" x-model="q" placeholder="לדוגמה: 43">
+            <span class="form-hint">חייב להיות ראשוני ו q ≡ 3 (mod 4)</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">פרמטר A</label>
+            <input class="form-input" type="text" x-model="a" placeholder="לדוגמה: 1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">פרמטר B</label>
+            <input class="form-input" type="text" x-model="b" placeholder="לדוגמה: 8">
+            <span class="form-hint">4A³ + 27B² ≠ 0</span>
+          </div>
+        </div>
+        <button class="btn-primary" @click="showConstraints()" :disabled="loading">
+          אמת פרמטרים והצג אילוצי מפתח פרטי
+        </button>
+      </div>
+
+      <!-- STEP 2: Constraints -->
+      <div x-show="constraints" x-cloak x-ref="constraintsSection">
+        <h2 class="results-heading">שלב 2: אילוצי מפתח פרטי</h2>
+
+        <div class="detail-section">
+          <h3>פרטי עקומה</h3>
+          <div class="detail-item">
+            <div class="detail-label">מספר ראשוני (p):</div>
+            <div class="detail-value" x-text="constraints?.prime"></div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">משוואת העקומה:</div>
+            <div class="detail-value" x-text="constraints?.curveEquation"></div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">סדר קבוצה:</div>
+            <div class="detail-value" x-text="constraints?.groupOrder"></div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">סדר נקודה יוצרת (r):</div>
+            <div class="detail-value" x-text="constraints?.r"></div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">נקודה יוצרת:</div>
+            <div class="detail-value" x-text="constraints?.generatorPoint"></div>
+          </div>
         </div>
 
-        <div class="content">
-            <!-- STEP 1: Curve Parameters -->
-            <div class="input-section">
-                <h2>שלב 1: בחר פרמטרי עקומה</h2>
-                
-                <div class="form-group">
-                    <label for="primeQ">מספר ראשוני q (מאפיין השדה):</label>
-                    <input type="text" id="primeQ" value="43" placeholder="לדוגמה: 43">
-                    <small>חייב להיות ראשוני ו q ≡ 3 (mod 4)</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="paramA">פרמטר A (עבור y² = x³ + Ax + B):</label>
-                    <input type="text" id="paramA" value="1" placeholder="לדוגמה: 1">
-                </div>
-
-                <div class="form-group">
-                    <label for="paramB">פרמטר B (עבור y² = x³ + Ax + B):</label>
-                    <input type="text" id="paramB" value="8" placeholder="לדוגמה: 8">
-                    <small>חייב לקיים: 4A³ + 27B² ≠ 0</small>
-                </div>
-
-                <button class="btn" onclick="showPrivateKeyConstraints()" id="validateBtn">
-                    אמת פרמטרים והצג אילוצי מפתח פרטי
-                </button>
-            </div>
-
-            <div id="loadingSection" class="hidden">
-                <div class="loader"></div>
-                <p style="text-align: center; color: #666;">מבצע חישובים...</p>
-            </div>
-
-            <div id="errorSection" class="hidden error-message"></div>
-
-            <div id="constraintsSection" class="results-section hidden"></div>
-
-            <!-- STEP 3: Participants Management -->
-            <div id="participantsSection" class="input-section hidden" style="margin-top: 20px;">
-                <h2>שלב 3: הוסף משתתפים וחתום</h2>
-                
-                <div class="form-group">
-                    <label for="message">הודעה לחתימה (משותפת לכל המשתתפים):</label>
-                    <input type="text" id="message" value="שלום" placeholder="הקלד הודעה כלשהי">
-                </div>
-
-                <div id="participantsList" class="participants-container">
-                    <!-- Participants will be added here dynamically -->
-                </div>
-
-                <button class="btn add-participant-btn" onclick="addParticipant()">
-                    <span style="font-size: 1.5em;">+</span>
-                    הוסף משתתף
-                </button>
-
-                <div style="margin-top: 20px;">
-                    <button class="btn" onclick="generateAggregatedSignature()" id="submitBtn" disabled>
-                        חשב חתימות מצטברות ואמת
-                    </button>
-                </div>
-            </div>
-
-            <div id="resultsSection" class="results-section hidden"></div>
+        <div class="detail-section">
+          <h3 x-text="constraints?.constraintDescription"></h3>
+          <div class="detail-item">
+            <div class="detail-label">כלל אימות:</div>
+            <div class="detail-value" style="white-space:pre-wrap;direction:rtl;text-align:right;" x-text="constraints?.validationRule"></div>
+          </div>
         </div>
+
+        <div class="detail-section">
+          <h3>הסבר מפורט</h3>
+          <div class="detail-item">
+            <div class="detail-value" style="white-space:pre-wrap;direction:rtl;text-align:right;" x-text="constraints?.explanation"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Participants -->
+      <div class="section-card" x-show="constraints" x-cloak>
+        <h2>שלב 3: הוסף משתתפים וחתום</h2>
+
+        <div class="form-group">
+          <label class="form-label">הודעה לחתימה (משותפת לכל המשתתפים)</label>
+          <input class="form-input" type="text" x-model="message" placeholder="הקלד הודעה כלשהי">
+        </div>
+
+        <!-- Participant cards -->
+        <template x-for="(p, idx) in participants" :key="p.id">
+          <div class="participant-card">
+            <button class="btn-danger remove-btn" @click="removeParticipant(p.id)" x-show="participants.length > 2">✕ הסר</button>
+            <div class="card-header">
+              <div class="participant-avatar" x-text="getInitials(p.name)"></div>
+              <div class="card-title" x-text="'משתתף ' + (idx + 1)"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">שם המשתתף</label>
+              <input class="form-input" type="text" x-model="p.name" placeholder="לדוגמה: אליס">
+            </div>
+            <div class="form-group">
+              <label class="form-label">מפתח פרטי</label>
+              <select class="form-select" x-model="p.key">
+                <option value="">-- בחר מפתח תקין --</option>
+                <template x-for="k in validKeys" :key="k">
+                  <option :value="k" x-text="k"></option>
+                </template>
+              </select>
+            </div>
+          </div>
+        </template>
+
+        <button class="btn-primary btn-success" style="margin-bottom:16px;" @click="addParticipant()">
+          + הוסף משתתף
+        </button>
+
+        <button class="btn-primary" @click="generateAggregatedSignature()" :disabled="loading || !canSubmit">
+          חשב חתימות מצטברות ואמת
+        </button>
+      </div>
+
+      <!-- RESULTS -->
+      <div x-show="result" x-cloak x-ref="resultsSection">
+        <h2 class="results-heading">תוצאות חתימה מצטברת</h2>
+
+        <!-- Common steps -->
+        <h3 class="results-heading" style="font-size:1rem;">צעדים משותפים</h3>
+        <template x-for="(step, i) in result?.commonSteps" :key="i">
+          <div class="step-card">
+            <div class="step-head">
+              <span class="step-badge" x-text="i + 1"></span>
+              <span class="step-title" x-html="step.description"></span>
+            </div>
+            <div class="step-result" x-html="step.result"></div>
+          </div>
+        </template>
+
+        <!-- Individual signatures -->
+        <h3 class="results-heading" style="font-size:1rem;">חתימות בודדות</h3>
+        <template x-for="sig in result?.individualSignatures" :key="sig.participantName">
+          <div class="individual-signature">
+            <h4>👤 <span x-text="sig.participantName"></span></h4>
+            <p><strong>מפתח פרטי:</strong> <span x-text="sig.privateKey"></span></p>
+            <p><strong>מפתח ציבורי:</strong> <span x-text="sig.publicKey"></span></p>
+            <p><strong>חתימה:</strong> <span x-text="sig.signature"></span></p>
+          </div>
+        </template>
+
+        <!-- Aggregation summary -->
+        <div class="detail-section" style="margin-top:16px;">
+          <h3>סיכום צבירה</h3>
+          <div class="detail-item">
+            <div class="detail-label">מפתח ציבורי מצטבר:</div>
+            <div class="detail-value" x-text="result?.aggregatedPublicKey"></div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">חתימה מצטברת:</div>
+            <div class="detail-value" x-text="result?.aggregatedSignature"></div>
+          </div>
+        </div>
+
+        <!-- Verification badge -->
+        <div class="verify-badge" :class="{ failed: !result?.verificationPassed }">
+          <div class="pulse-ring"></div>
+          <div class="lock-icon" x-text="result?.verificationPassed ? '🔒' : '🔓'"></div>
+          <div class="verify-text" x-text="result?.verificationPassed ? '✓ אימות הצליח!' : '✗ אימות נכשל!'"></div>
+          <div class="verify-sub" x-text="result?.verificationPassed ? 'כל החתימות אומתו בהצלחה באמצעות זיווג ביליניארי אחד בלבד!' : 'הזיווגים לא תואמים - קיימת בעיה באחת החתימות'"></div>
+          <div class="verify-formula" style="margin-top:8px;color:var(--text-secondary);font-size:0.9rem;">
+            e(σ<sub>agg</sub>, Q) = e(H(m), Q)<sup>(Σ sk<sub>i</sub>)</sup>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </div>
 
-    <script>
-        let participantCount = 0;
-        let validPrivateKeys = [];
-
-        function addParticipant() {
-            participantCount++;
-            const participantsList = document.getElementById('participantsList');
-            
-            const participantCard = document.createElement('div');
-            participantCard.className = 'participant-card';
-            participantCard.id = `participant-${participantCount}`;
-            
-            participantCard.innerHTML = `
-                <button class="btn btn-danger remove-participant" onclick="removeParticipant(${participantCount})">
-                    ✕ הסר
-                </button>
-                <h3>משתתף ${participantCount}</h3>
-                <div class="form-group">
-                    <label for="name-${participantCount}">שם המשתתף:</label>
-                    <input type="text" id="name-${participantCount}" placeholder="לדוגמה: אליס">
-                </div>
-                <div class="form-group">
-                    <label for="key-${participantCount}">מפתח פרטי:</label>
-                    <select id="key-${participantCount}" class="participant-key">
-                        <option value="">-- בחר מפתח תקין --</option>
-                        ${validPrivateKeys.map(key => `<option value="${key}">${key}</option>`).join('')}
-                    </select>
-                </div>
-            `;
-            
-            participantsList.appendChild(participantCard);
-            updateSubmitButton();
-        }
-
-        function removeParticipant(id) {
-            const participant = document.getElementById(`participant-${id}`);
-            if (participant) {
-                participant.remove();
-            }
-            updateSubmitButton();
-        }
-
-        function updateSubmitButton() {
-            const participants = document.querySelectorAll('.participant-card');
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = participants.length < 2;
-        }
-
-        async function showPrivateKeyConstraints() {
-            const validateBtn = document.getElementById('validateBtn');
-            const loadingSection = document.getElementById('loadingSection');
-            const errorSection = document.getElementById('errorSection');
-            const constraintsSection = document.getElementById('constraintsSection');
-
-            // Clear previous results
-            constraintsSection.classList.add('hidden');
-            errorSection.classList.add('hidden');
-            constraintsSection.innerHTML = '';
-
-            // Show loading
-            validateBtn.disabled = true;
-            loadingSection.classList.remove('hidden');
-
-            try {
-                const response = await fetch('/api/aggregated/private-key-constraints', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        PRIME_Q: document.getElementById('primeQ').value,
-                        A: document.getElementById('paramA').value,
-                        B: document.getElementById('paramB').value,
-                        Language: 'he'
-                    })
-                });
-
-                const data = await response.json();
-
-                if (!data.success) {
-                    throw new Error(data.errorMessage || 'שגיאה לא ידועה');
-                }
-
-                displayConstraints(data);
-            } catch (error) {
-                errorSection.textContent = `שגיאה: ${error.message}`;
-                errorSection.classList.remove('hidden');
-            } finally {
-                validateBtn.disabled = false;
-                loadingSection.classList.add('hidden');
-            }
-        }
-
-        function displayConstraints(data) {
-            const constraintsSection = document.getElementById('constraintsSection');
-            let html = '<h2 style="color: #667eea; margin-bottom: 20px;">שלב 2: אילוצי מפתח פרטי</h2>';
-
-            html += `
-                <div class="detail-section">
-                    <h3>פרטי עקומה</h3>
-                    <div class="detail-item">
-                        <div class="detail-label">מספר ראשוני (p):</div>
-                        <div class="detail-value">${data.prime}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">משוואת העקומה:</div>
-                        <div class="detail-value">${data.curveEquation}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">סדר קבוצה:</div>
-                        <div class="detail-value">${data.groupOrder}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">סדר נקודה יוצרת (r):</div>
-                        <div class="detail-value">${data.r}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">נקודה יוצרת:</div>
-                        <div class="detail-value">${data.generatorPoint}</div>
-                    </div>
-                </div>
-
-                <div class="detail-section">
-                    <h3>${data.constraintDescription}</h3>
-                    <div class="detail-item">
-                        <div class="detail-label">כלל אימות:</div>
-                        <div class="detail-value" style="white-space: pre-wrap; direction: rtl; text-align: right;">${data.validationRule}</div>
-                    </div>
-                </div>
-
-                <div class="detail-section">
-                    <h3>הסבר מפורט</h3>
-                    <div class="detail-item">
-                        <div class="detail-value" style="white-space: pre-wrap; direction: rtl; text-align: right;">${data.explanation}</div>
-                    </div>
-                </div>
-
-            `;
-
-            constraintsSection.innerHTML = html;
-            constraintsSection.classList.remove('hidden');
-
-            // Store valid keys and show participants section
-            validPrivateKeys = data.validKeyExamples;
-            document.getElementById('participantsSection').classList.remove('hidden');
-
-            // Add first two participants by default
-            addParticipant();
-            addParticipant();
-
-            // Scroll to constraints
-            constraintsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        async function generateAggregatedSignature() {
-            const submitBtn = document.getElementById('submitBtn');
-            const loadingSection = document.getElementById('loadingSection');
-            const errorSection = document.getElementById('errorSection');
-            const resultsSection = document.getElementById('resultsSection');
-
-            // Collect participants data
-            const participants = [];
-            const participantCards = document.querySelectorAll('.participant-card');
-            
-            for (const card of participantCards) {
-                const id = card.id.split('-')[1];
-                const name = document.getElementById(`name-${id}`).value.trim();
-                const privateKey = document.getElementById(`key-${id}`).value;
-
-                if (!name) {
-                    errorSection.textContent = 'שגיאה: יש להזין שם לכל המשתתפים';
-                    errorSection.classList.remove('hidden');
-                    return;
-                }
-
-                if (!privateKey) {
-                    errorSection.textContent = 'שגיאה: יש לבחור מפתח פרטי לכל המשתתפים';
-                    errorSection.classList.remove('hidden');
-                    return;
-                }
-
-                participants.push({ Name: name, PrivateKey: privateKey });
-            }
-
-            // Clear previous results
-            resultsSection.classList.add('hidden');
-            errorSection.classList.add('hidden');
-            resultsSection.innerHTML = '';
-
-            // Show loading
-            submitBtn.disabled = true;
-            loadingSection.classList.remove('hidden');
-
-            try {
-                const response = await fetch('/api/aggregated/sign', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        PRIME_Q: document.getElementById('primeQ').value,
-                        A: document.getElementById('paramA').value,
-                        B: document.getElementById('paramB').value,
-                        Message: document.getElementById('message').value,
-                        Participants: participants,
-                        Language: 'he',
-                        IncludeDetailedReport: true
-                    })
-                });
-
-                const data = await response.json();
-
-                if (!data.success) {
-                    throw new Error(data.errorMessage || 'שגיאה לא ידועה');
-                }
-
-                displayResults(data);
-            } catch (error) {
-                errorSection.textContent = `שגיאה: ${error.message}`;
-                errorSection.classList.remove('hidden');
-            } finally {
-                submitBtn.disabled = false;
-                loadingSection.classList.add('hidden');
-            }
-        }
-
-        function displayResults(data) {
-            const resultsSection = document.getElementById('resultsSection');
-            let html = '<h2 style="color: #667eea; margin-bottom: 20px;">תוצאות חתימה מצטברת</h2>';
-
-            // Common steps
-            html += '<h3 style="color: #667eea; margin: 20px 0;">צעדים משותפים</h3>';
-            let stepNum = 1;
-            data.commonSteps.forEach(step => {
-                html += `
-                    <div class="step">
-                        <div class="step-header">
-                            <div class="step-number">${stepNum++}</div>
-                            <div class="step-title">${step.description}</div>
-                        </div>
-                        <div class="step-result">${step.result}</div>
-                    </div>
-                `;
-            });
-
-            // Individual signatures
-            html += '<h3 style="color: #667eea; margin: 20px 0;">חתימות בודדות</h3>';
-            data.individualSignatures.forEach(sig => {
-                html += `
-                    <div class="individual-signature">
-                        <h4>👤 ${sig.participantName}</h4>
-                        <p><strong>מפתח פרטי:</strong> ${sig.privateKey}</p>
-                        <p><strong>מפתח ציבורי:</strong> ${sig.publicKey}</p>
-                        <p><strong>חתימה:</strong> ${sig.signature}</p>
-                    </div>
-                `;
-            });
-
-            // Aggregation summary
-            html += `
-                <div class="detail-section" style="margin-top: 20px;">
-                    <h3>סיכום צבירה</h3>
-                    <div class="detail-item">
-                        <div class="detail-label">מפתח ציבורי מצטבר:</div>
-                        <div class="detail-value">${data.aggregatedPublicKey}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">חתימה מצטברת:</div>
-                        <div class="detail-value">${data.aggregatedSignature}</div>
-                    </div>
-                </div>
-            `;
-
-            // Final result
-            const passedClass = data.verificationPassed ? '' : 'failed';
-            const statusText = data.verificationPassed ? '✓ אימות הצליח!' : '✗ אימות נכשל!';
-            const explanationText = data.verificationPassed 
-                ? 'כל החתימות אומתו בהצלחה באמצעות זיווג ביליניארי אחד בלבד!'
-                : 'הזיווגים לא תואמים - קיימת בעיה באחת החתימות';
-
-            html += `
-                <div class="final-result ${passedClass}">
-                    <h3>${statusText}</h3>
-                    <p style="margin-top: 15px; font-size: 1.1em;">${explanationText}</p>
-                    <p style="margin-top: 10px; font-size: 0.95em; opacity: 0.9;">
-                        e(σ<sub>agg</sub>, Q) = e(H(m), Q)<sup>(Σ sk<sub>i</sub>)</sup>
-                    </p>
-                </div>
-            `;
-
-            resultsSection.innerHTML = html;
-            resultsSection.classList.remove('hidden');
-
-            // Scroll to results
-            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    </script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="js/aggregated-ui.js"></script>
 </body>
 </html>

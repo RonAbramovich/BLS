@@ -1,0 +1,39 @@
+/* ==========================================================================
+   RTL overrides — loaded only by Hebrew pages
+   ========================================================================== */
+
+body { direction: rtl; }
+
+.step-card {
+  border-left: 1px solid var(--accent-border);
+  border-right: 3px solid var(--accent);
+}
+
+.attempt {
+  border-left: none;
+  border-right: 3px solid var(--text-dim);
+}
+
+.attempt.success {
+  border-right-color: var(--success);
+}
+
+.individual-signature {
+  border-left: 1px solid var(--accent-border);
+  border-right: 4px solid var(--accent);
+}
+
+.participant-card .remove-btn {
+  right: auto;
+  left: 14px;
+}
+
+.detail-value {
+  direction: ltr;
+  text-align: left;
+}
+
+.step-result {
+  direction: ltr;
+  text-align: left;
+}
