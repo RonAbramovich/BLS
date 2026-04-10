@@ -1,28 +1,27 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>חתימת BLS מצטברת - מחשבון אינטראקטיבי</title>
+  <title>Aggregated BLS Signature - Interactive Calculator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/rtl.css">
 </head>
 <body>
-  <div x-data="aggregatedApp('he')">
+  <div x-data="aggregatedApp('en')">
 
     <!-- Navigation -->
     <nav class="nav-pills">
-      <a class="nav-pill" href="index.html">חתימה רגילה</a>
-      <a class="nav-pill" href="aggregated-en.html">English</a>
+      <a class="nav-pill" href="index-en.html">Regular Signature</a>
+      <a class="nav-pill" href="aggregated.html">עברית</a>
     </nav>
 
     <!-- Header -->
     <header class="app-header">
-      <h1>חתימת BLS מצטברת</h1>
-      <p class="subtitle">הדגמת צבירת חתימות מרובות ואימות משותף</p>
+      <h1>Aggregated BLS Signature</h1>
+      <p class="subtitle">Multi-signature aggregation and joint verification</p>
     </header>
 
     <div class="app-container">
@@ -64,8 +63,8 @@
         </div>
         <div class="math-block" data-katex="y^2 = x^3 + Ax + B \pmod{q}"></div>
         <div class="header-text">
-          <h2>חתימה מצטברת BLS</h2>
-          <p>צבירת חתימות מרובות לאימות יחיד</p>
+          <h2>Aggregated BLS Signature</h2>
+          <p>Multiple signatures verified with a single pairing</p>
         </div>
       </div>
 
@@ -77,57 +76,57 @@
       <!-- Loading -->
       <div class="loading-container" x-show="loading" x-cloak>
         <div class="spinner"></div>
-        <p>מבצע חישובים...</p>
+        <p>Computing...</p>
       </div>
 
       <!-- STEP 1: Curve Parameters -->
       <div class="section-card">
-        <h2>שלב 1: בחר פרמטרי עקומה</h2>
+        <h2>Step 1: Select Curve Parameters</h2>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">מספר ראשוני q</label>
-            <input class="form-input" type="text" x-model="q" placeholder="לדוגמה: 43">
-            <span class="form-hint">חייב להיות ראשוני ו q ≡ 3 (mod 4)</span>
+            <label class="form-label">Prime q</label>
+            <input class="form-input" type="text" x-model="q" placeholder="e.g., 43">
+            <span class="form-hint">Must be prime and q ≡ 3 (mod 4)</span>
           </div>
           <div class="form-group">
-            <label class="form-label">פרמטר A</label>
-            <input class="form-input" type="text" x-model="a" placeholder="לדוגמה: 1">
+            <label class="form-label">Parameter A</label>
+            <input class="form-input" type="text" x-model="a" placeholder="e.g., 1">
           </div>
           <div class="form-group">
-            <label class="form-label">פרמטר B</label>
-            <input class="form-input" type="text" x-model="b" placeholder="לדוגמה: 8">
+            <label class="form-label">Parameter B</label>
+            <input class="form-input" type="text" x-model="b" placeholder="e.g., 8">
             <span class="form-hint">4A³ + 27B² ≠ 0</span>
           </div>
         </div>
         <button class="btn-primary" @click="showConstraints()" :disabled="loading">
-          אמת פרמטרים והצג אילוצי מפתח פרטי
+          Validate Parameters &amp; Show Private Key Constraints
         </button>
       </div>
 
       <!-- STEP 2: Constraints -->
       <div x-show="constraints" x-cloak x-ref="constraintsSection">
-        <h2 class="results-heading">שלב 2: אילוצי מפתח פרטי</h2>
+        <h2 class="results-heading">Step 2: Private Key Constraints</h2>
 
         <div class="detail-section">
-          <h3>פרטי עקומה</h3>
+          <h3>Curve Details</h3>
           <div class="detail-item">
-            <div class="detail-label">מספר ראשוני (p):</div>
+            <div class="detail-label">Prime (p):</div>
             <div class="detail-value" x-text="constraints?.prime"></div>
           </div>
           <div class="detail-item">
-            <div class="detail-label">משוואת העקומה:</div>
+            <div class="detail-label">Curve Equation:</div>
             <div class="detail-value" x-text="constraints?.curveEquation"></div>
           </div>
           <div class="detail-item">
-            <div class="detail-label">סדר קבוצה:</div>
+            <div class="detail-label">Group Order:</div>
             <div class="detail-value" x-text="constraints?.groupOrder"></div>
           </div>
           <div class="detail-item">
-            <div class="detail-label">סדר נקודה יוצרת (r):</div>
+            <div class="detail-label">Generator Order (r):</div>
             <div class="detail-value" x-text="constraints?.r"></div>
           </div>
           <div class="detail-item">
-            <div class="detail-label">נקודה יוצרת:</div>
+            <div class="detail-label">Generator Point:</div>
             <div class="detail-value" x-text="constraints?.generatorPoint"></div>
           </div>
         </div>
@@ -135,44 +134,44 @@
         <div class="detail-section">
           <h3 x-text="constraints?.constraintDescription"></h3>
           <div class="detail-item">
-            <div class="detail-label">כלל אימות:</div>
-            <div class="detail-value" style="white-space:pre-wrap;direction:rtl;text-align:right;" x-text="constraints?.validationRule"></div>
+            <div class="detail-label">Validation Rule:</div>
+            <div class="detail-value" style="white-space:pre-wrap;" x-text="constraints?.validationRule"></div>
           </div>
         </div>
 
         <div class="detail-section">
-          <h3>הסבר מפורט</h3>
+          <h3>Detailed Explanation</h3>
           <div class="detail-item">
-            <div class="detail-value" style="white-space:pre-wrap;direction:rtl;text-align:right;" x-text="constraints?.explanation"></div>
+            <div class="detail-value" style="white-space:pre-wrap;" x-text="constraints?.explanation"></div>
           </div>
         </div>
       </div>
 
       <!-- STEP 3: Participants -->
       <div class="section-card" x-show="constraints" x-cloak>
-        <h2>שלב 3: הוסף משתתפים וחתום</h2>
+        <h2>Step 3: Add Participants and Sign</h2>
 
         <div class="form-group">
-          <label class="form-label">הודעה לחתימה (משותפת לכל המשתתפים)</label>
-          <input class="form-input" type="text" x-model="message" placeholder="הקלד הודעה כלשהי">
+          <label class="form-label">Message to Sign (shared by all participants)</label>
+          <input class="form-input" type="text" x-model="message" placeholder="Enter any message">
         </div>
 
         <!-- Participant cards -->
         <template x-for="(p, idx) in participants" :key="p.id">
           <div class="participant-card">
-            <button class="btn-danger remove-btn" @click="removeParticipant(p.id)" x-show="participants.length > 2">✕ הסר</button>
+            <button class="btn-danger remove-btn" @click="removeParticipant(p.id)" x-show="participants.length > 2">✕ Remove</button>
             <div class="card-header">
               <div class="participant-avatar" x-text="getInitials(p.name)"></div>
-              <div class="card-title" x-text="'משתתף ' + (idx + 1)"></div>
+              <div class="card-title" x-text="'Participant ' + (idx + 1)"></div>
             </div>
             <div class="form-group">
-              <label class="form-label">שם המשתתף</label>
-              <input class="form-input" type="text" x-model="p.name" placeholder="לדוגמה: אליס">
+              <label class="form-label">Participant Name</label>
+              <input class="form-input" type="text" x-model="p.name" placeholder="e.g., Alice">
             </div>
             <div class="form-group">
-              <label class="form-label">מפתח פרטי</label>
+              <label class="form-label">Private Key</label>
               <select class="form-select" x-model="p.key">
-                <option value="">-- בחר מפתח תקין --</option>
+                <option value="">-- Select a valid key --</option>
                 <template x-for="k in validKeys" :key="k">
                   <option :value="k" x-text="k"></option>
                 </template>
@@ -182,23 +181,23 @@
         </template>
 
         <button class="btn-primary btn-success" style="margin-bottom:16px;" @click="addParticipant()">
-          + הוסף משתתף
+          + Add Participant
         </button>
         <button class="btn-primary btn-demo" style="margin-bottom:16px;" @click="fillDemoParticipants()" :disabled="!validKeys.length">
-          הדגמה מהירה (7 משתתפים)
+          Quick Demo (7 Participants)
         </button>
 
         <button class="btn-primary" @click="generateAggregatedSignature()" :disabled="loading || !canSubmit">
-          חשב חתימות מצטברות ואמת
+          Compute Aggregated Signatures &amp; Verify
         </button>
       </div>
 
       <!-- RESULTS -->
       <div x-show="result" x-cloak x-ref="resultsSection">
-        <h2 class="results-heading">תוצאות חתימה מצטברת</h2>
+        <h2 class="results-heading">Aggregated Signature Results</h2>
 
         <!-- Common steps -->
-        <h3 class="results-heading" style="font-size:1rem;">צעדים משותפים</h3>
+        <h3 class="results-heading" style="font-size:1rem;">Common Steps</h3>
         <template x-for="(step, i) in result?.commonSteps" :key="i">
           <div class="step-card">
             <div class="step-head">
@@ -210,25 +209,25 @@
         </template>
 
         <!-- Individual signatures -->
-        <h3 class="results-heading" style="font-size:1rem;">חתימות בודדות</h3>
+        <h3 class="results-heading" style="font-size:1rem;">Individual Signatures</h3>
         <template x-for="sig in result?.individualSignatures" :key="sig.participantName">
           <div class="individual-signature">
             <h4>👤 <span x-text="sig.participantName"></span></h4>
-            <p><strong>מפתח פרטי:</strong> <span x-text="sig.privateKey"></span></p>
-            <p><strong>מפתח ציבורי:</strong> <span x-text="sig.publicKey"></span></p>
-            <p><strong>חתימה:</strong> <span x-text="sig.signature"></span></p>
+            <p><strong>Private Key:</strong> <span x-text="sig.privateKey"></span></p>
+            <p><strong>Public Key:</strong> <span x-text="sig.publicKey"></span></p>
+            <p><strong>Signature:</strong> <span x-text="sig.signature"></span></p>
           </div>
         </template>
 
         <!-- Aggregation summary -->
         <div class="detail-section" style="margin-top:16px;">
-          <h3>סיכום צבירה</h3>
+          <h3>Aggregation Summary</h3>
           <div class="detail-item">
-            <div class="detail-label">מפתח ציבורי מצטבר:</div>
+            <div class="detail-label">Aggregated Public Key:</div>
             <div class="detail-value" x-text="result?.aggregatedPublicKey"></div>
           </div>
           <div class="detail-item">
-            <div class="detail-label">חתימה מצטברת:</div>
+            <div class="detail-label">Aggregated Signature:</div>
             <div class="detail-value" x-text="result?.aggregatedSignature"></div>
           </div>
         </div>
@@ -237,8 +236,8 @@
         <div class="verify-badge" :class="{ failed: !result?.verificationPassed }">
           <div class="pulse-ring"></div>
           <div class="lock-icon" x-text="result?.verificationPassed ? '🔒' : '🔓'"></div>
-          <div class="verify-text" x-text="result?.verificationPassed ? '✓ אימות הצליח!' : '✗ אימות נכשל!'"></div>
-          <div class="verify-sub" x-text="result?.verificationPassed ? 'כל החתימות אומתו בהצלחה באמצעות זיווג ביליניארי אחד בלבד!' : 'הזיווגים לא תואמים - קיימת בעיה באחת החתימות'"></div>
+          <div class="verify-text" x-text="result?.verificationPassed ? '✓ Verification Passed!' : '✗ Verification Failed!'"></div>
+          <div class="verify-sub" x-text="result?.verificationPassed ? 'All signatures were successfully verified using a single bilinear pairing!' : 'The pairings do not match — there is an issue with one of the signatures'"></div>
           <div class="verify-formula" style="margin-top:8px;color:var(--text-secondary);font-size:0.9rem;">
             e(σ<sub>agg</sub>, Q) = e(H(m), Q)<sup>(Σ sk<sub>i</sub>)</sup>
           </div>

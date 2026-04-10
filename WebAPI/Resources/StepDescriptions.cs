@@ -11,11 +11,11 @@ namespace BLS.WebAPI.Resources
             public const string Step2 = "חישוב סדר החבורה של העקום";
             public const string Step3 = "חישוב P = H(m) - גיבוב ההודעה לנקודה על העקומה";
             public const string Step4 = "חישוב מעלת השיכון k";
-            public const string Step5 = "מציאת פולינום בלתי פריק מעל F_q ממעלה k";
-            public const string Step6 = "יצירת שדה הרחבה F_q^k ועקום מעל השדה המורחב";
-            public const string Step7 = "מציאת נקודה Q בתת-קבוצת r-טורסיה של E(F_q^k)";
-            public const string Step8 = "חישוב חתימת אליס: e_r(a*H(m), Q)";
-            public const string Step9 = "חישוב אימות בוב: e_r(H(m), a*Q)";
+            public const string Step5 = "מציאת פולינום בלתי פריק מעל F<sub>q</sub> ממעלה k";
+            public const string Step6 = "יצירת שדה הרחבה F<sub>q</sub><sup>k</sup> ועקום מעל השדה המורחב";
+            public const string Step7 = "מציאת נקודה Q בתת-קבוצת r-פיתול של E(F<sub>q</sub><sup>k</sup>)";
+            public const string Step8 = "חישוב חתימת אליס: e<sub>r</sub>(a·H(m), Q)";
+            public const string Step9 = "חישוב אימות בוב: e<sub>r</sub>(H(m), a·Q)";
         }
 
         public static class English
@@ -24,11 +24,11 @@ namespace BLS.WebAPI.Resources
             public const string Step2 = "Calculate curve group order";
             public const string Step3 = "Calculate P = H(m) - hash message to curve point";
             public const string Step4 = "Calculate embedding degree k";
-            public const string Step5 = "Find irreducible polynomial over F_q of degree k";
-            public const string Step6 = "Create extension field F_q^k and curve over extension";
-            public const string Step7 = "Find point Q in r-torsion subgroup of E(F_q^k)";
-            public const string Step8 = "Calculate Alice signature: e_r(a*H(m), Q)";
-            public const string Step9 = "Calculate Bob verification: e_r(H(m), a*Q)";
+            public const string Step5 = "Find irreducible polynomial over F<sub>q</sub> of degree k";
+            public const string Step6 = "Create extension field F<sub>q</sub><sup>k</sup> and curve over extension";
+            public const string Step7 = "Find point Q in r-torsion subgroup of E(F<sub>q</sub><sup>k</sup>)";
+            public const string Step8 = "Calculate Alice signature: e<sub>r</sub>(a·H(m), Q)";
+            public const string Step9 = "Calculate Bob verification: e<sub>r</sub>(H(m), a·Q)";
         }
 
         public static string GetDescription(int stepNumber, string language)

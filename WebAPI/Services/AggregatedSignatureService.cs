@@ -74,7 +74,7 @@ namespace BLS.WebAPI.Services
                 // Detailed explanation
                 response.Explanation = lang == "he"
                     ? $"הסבר:\n" +
-                      $"• הנקודה הגנרטורית G = ({generator.X.Value}, {generator.Y.Value}) היא בעלת סדר r={r}\n" +
+                      $"• הנקודה היוצרת G = ({generator.X.Value}, {generator.Y.Value}) היא בעלת סדר r={r}\n" +
                       $"• כלומר: r × G = נקודת אינסוף\n" +
                       $"• לכן, אם sk הוא כפולה של r (sk = k×r), אזי:\n" +
                       $"  pk = sk × G = (k×r) × G = k × (r × G) = k × ∞ = ∞\n" +
@@ -145,7 +145,7 @@ namespace BLS.WebAPI.Services
                 // Find generator point
                 var generator = FindGenerator(baseCurve, baseField, r);
 
-                AddCommonStep(response, lang == "he" ? "בחירת נקודת יצירה" : "Select generator point",
+                AddCommonStep(response, lang == "he" ? "בחירת נקודה יוצרת" : "Select generator point",
                     lang == "he" ?
                     $"G = ({generator.X.Value}, {generator.Y.Value})" :
                     $"G = ({generator.X.Value}, {generator.Y.Value})");
@@ -254,8 +254,8 @@ namespace BLS.WebAPI.Services
 
                 AddCommonStep(response, lang == "he" ? "צבירת מפתחות ציבוריים" : "Aggregate public keys",
                     lang == "he" ?
-                    $"apk = Σ pk_i = {response.AggregatedPublicKey}" :
-                    $"apk = Σ pk_i = {response.AggregatedPublicKey}");
+                    $"apk = Σ pk<sub>i</sub> = {response.AggregatedPublicKey}" :
+                    $"apk = Σ pk<sub>i</sub> = {response.AggregatedPublicKey}");
 
                 // Aggregate signatures
                 var aggregatedSig = signatures[0];
@@ -267,8 +267,8 @@ namespace BLS.WebAPI.Services
 
                 AddCommonStep(response, lang == "he" ? "צבירת חתימות" : "Aggregate signatures",
                     lang == "he" ?
-                    $"asig = Σ σ_i = {response.AggregatedSignature}" :
-                    $"asig = Σ σ_i = {response.AggregatedSignature}");
+                    $"asig = Σ σ<sub>i</sub> = {response.AggregatedSignature}" :
+                    $"asig = Σ σ<sub>i</sub> = {response.AggregatedSignature}");
 
                 // Verification using bilinearity property of pairing:
                 // e(σ_agg, Q) should equal e(H(m), pk_agg × Q)
@@ -276,10 +276,10 @@ namespace BLS.WebAPI.Services
 
                 // First, we need to set up extension field and find a torsion point
                 int k = FindEmbeddingDegree(q, r);
-                AddCommonStep(response, lang == "he" ? "מציאת דרגת הטמעה" : "Find embedding degree",
+                AddCommonStep(response, lang == "he" ? "מציאת מעלת השיכון" : "Find embedding degree",
                     lang == "he" ?
-                    $"k = {k} (הקטן ביותר כך ש- r | q^k - 1)" :
-                    $"k = {k} (smallest such that r | q^k - 1)");
+                    $"k = {k} (הקטן ביותר כך ש- r | q<sup>k</sup> - 1)" :
+                    $"k = {k} (smallest such that r | q<sup>k</sup> - 1)");
 
                 var irreduciblePoly = IrreduciblePolynomialFinder.FindIrreduciblePolynomial(baseField, r, k);
                 var extensionField = new ExtensionField(baseField, irreduciblePoly);
@@ -290,14 +290,14 @@ namespace BLS.WebAPI.Services
 
                 AddCommonStep(response, lang == "he" ? "יצירת שדה הרחבה" : "Create extension field",
                     lang == "he" ?
-                    $"F_q^{k} עם פולינום בלתי פריק מדרגה {k}" :
-                    $"F_q^{k} with irreducible polynomial of degree {k}");
+                    $"F<sub>q</sub><sup>{k}</sup> עם פולינום בלתי פריק ממעלה {k}" :
+                    $"F<sub>q</sub><sup>{k}</sup> with irreducible polynomial of degree {k}");
 
                 var Q = TorsionPointFinder.FindIndependentTorsionPoint(extensionCurve, r);
-                AddCommonStep(response, lang == "he" ? "מציאת נקודת טורסיה" : "Find torsion point",
+                AddCommonStep(response, lang == "he" ? "מציאת נקודת פיתול" : "Find torsion point",
                     lang == "he" ?
-                    $"Q ∈ E(F_q^k)[r] בלתי תלויה לינארית" :
-                    $"Q ∈ E(F_q^k)[r] linearly independent");
+                    $"Q ∈ E(F<sub>q</sub><sup>k</sup>)[r] בלתי תלויה לינארית" :
+                    $"Q ∈ E(F<sub>q</sub><sup>k</sup>)[r] linearly independent");
 
                 // Compute pairings for verification
                 // Method: e(σ_agg, Q) should equal e(H(m), Q)^(Σ sk_i)
@@ -341,27 +341,27 @@ namespace BLS.WebAPI.Services
                         IndividualPublicKeys = response.IndividualSignatures.Select(s => s.PublicKey).ToList(),
                         IndividualSignatures = response.IndividualSignatures.Select(s => s.Signature).ToList(),
                         AggregatedPublicKeyCalculation = lang == "he" ?
-                            $"apk = Σ pk_i = {response.AggregatedPublicKey}" :
-                            $"apk = Σ pk_i = {response.AggregatedPublicKey}",
+                            $"apk = Σ pk<sub>i</sub> = {response.AggregatedPublicKey}" :
+                            $"apk = Σ pk<sub>i</sub> = {response.AggregatedPublicKey}",
                         AggregatedSignatureCalculation = lang == "he" ?
-                            $"σ_agg = Σ σ_i = {response.AggregatedSignature}" :
-                            $"σ_agg = Σ σ_i = {response.AggregatedSignature}",
+                            $"σ<sub>agg</sub> = Σ σ<sub>i</sub> = {response.AggregatedSignature}" :
+                            $"σ<sub>agg</sub> = Σ σ<sub>i</sub> = {response.AggregatedSignature}",
                         VerificationPoint = lang == "he" ?
-                            $"e(σ_agg, Q) = {pairingAggSig}\ne(H(m), Q)^(Σ sk_i) = {pairingExpected}" :
-                            $"e(σ_agg, Q) = {pairingAggSig}\ne(H(m), Q)^(Σ sk_i) = {pairingExpected}",
+                            $"e(σ<sub>agg</sub>, Q) = {pairingAggSig}\ne(H(m), Q)<sup>(Σ sk<sub>i</sub>)</sup> = {pairingExpected}" :
+                            $"e(σ<sub>agg</sub>, Q) = {pairingAggSig}\ne(H(m), Q)<sup>(Σ sk<sub>i</sub>)</sup> = {pairingExpected}",
                         PairingCheck = response.VerificationPassed
                     };
                 }
 
                 AddCommonStep(response, lang == "he" ? "אימות באמצעות זיווג ביליניארי" : "Verify using bilinear pairing",
                     lang == "he" ?
-                    $"בדיקה: e(σ_agg, Q) = e(H(m), Q)^(Σ sk_i)\n" +
-                    $"e(σ_agg, Q) = {pairingAggSig.ToString().Substring(0, Math.Min(50, pairingAggSig.ToString().Length))}...\n" +
-                    $"e(H(m), Q)^(Σsk) = {pairingExpected.ToString().Substring(0, Math.Min(50, pairingExpected.ToString().Length))}...\n" +
+                    $"בדיקה: e(σ<sub>agg</sub>, Q) = e(H(m), Q)<sup>(Σ sk<sub>i</sub>)</sup>\n" +
+                    $"e(σ<sub>agg</sub>, Q) = {pairingAggSig.ToString().Substring(0, Math.Min(50, pairingAggSig.ToString().Length))}...\n" +
+                    $"e(H(m), Q)<sup>(Σsk)</sup> = {pairingExpected.ToString().Substring(0, Math.Min(50, pairingExpected.ToString().Length))}...\n" +
                     $"תוצאה: {(response.VerificationPassed ? "✓ הזיווגים תואמים - אימות הצליח!" : "✗ הזיווגים שונים")}" :
-                    $"Check: e(σ_agg, Q) = e(H(m), Q)^(Σ sk_i)\n" +
-                    $"e(σ_agg, Q) = {pairingAggSig.ToString().Substring(0, Math.Min(50, pairingAggSig.ToString().Length))}...\n" +
-                    $"e(H(m), Q)^(Σsk) = {pairingExpected.ToString().Substring(0, Math.Min(50, pairingExpected.ToString().Length))}...\n" +
+                    $"Check: e(σ<sub>agg</sub>, Q) = e(H(m), Q)<sup>(Σ sk<sub>i</sub>)</sup>\n" +
+                    $"e(σ<sub>agg</sub>, Q) = {pairingAggSig.ToString().Substring(0, Math.Min(50, pairingAggSig.ToString().Length))}...\n" +
+                    $"e(H(m), Q)<sup>(Σsk)</sup> = {pairingExpected.ToString().Substring(0, Math.Min(50, pairingExpected.ToString().Length))}...\n" +
                     $"Result: {(response.VerificationPassed ? "✓ Pairings match - Verification passed!" : "✗ Pairings differ")}");
 
             }
