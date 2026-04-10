@@ -283,9 +283,11 @@ namespace BLS.WebAPI.Services
                 StepNumber = 7,
                 Description = StepDescriptions.GetDescription(7, lang),
                 TechnicalDescription = $"Found Q in E[r] linearly independent from base field",
-                Result = $"Q found (irrational point)",
+                Result = $"Q = ({Q.X}, {Q.Y})",
                 Details = new()
                 {
+                    ["Point_X"] = Q.X.ToString(),
+                    ["Point_Y"] = Q.Y.ToString(),
                     ["Point_X_Degree"] = Q.X.Poly.Degree.ToString(),
                     ["Point_Y_Degree"] = Q.Y.Poly.Degree.ToString(),
                     ["IsIrrational"] = (Q.X.Poly.Degree > 0 || Q.Y.Poly.Degree > 0).ToString()
@@ -325,11 +327,12 @@ namespace BLS.WebAPI.Services
                 StepNumber = 8,
                 Description = StepDescriptions.GetDescription(8, lang),
                 TechnicalDescription = $"Alice signature: e_r({privateKey}*H(m), Q)",
-                Result = $"Signature computed",
+                Result = $"e<sub>r</sub>(a·H(m), Q) = {signature}",
                 Details = new()
                 {
                     ["aP_X"] = aP.X.ToString(),
-                    ["aP_Y"] = aP.Y.ToString()
+                    ["aP_Y"] = aP.Y.ToString(),
+                    ["Signature"] = signature.ToString()
                 }
             });
 
@@ -367,10 +370,10 @@ namespace BLS.WebAPI.Services
                 StepNumber = 9,
                 Description = StepDescriptions.GetDescription(9, lang),
                 TechnicalDescription = $"Bob verification: e_r(H(m), {privateKey}*Q)",
-                Result = $"Verification computed",
+                Result = $"e<sub>r</sub>(H(m), a·Q) = {verification}",
                 Details = new()
                 {
-                    ["Verification"] = "Computed successfully"
+                    ["Verification"] = verification.ToString()
                 }
             });
 
