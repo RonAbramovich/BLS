@@ -189,6 +189,14 @@ namespace BLS.WebAPI.Services
         {
             var k = EmbeddingDegreeCalculator.FindEmbeddingDegree(r, q);
 
+            if (k <= 1)
+            {
+                var msg = lang == "he"
+                    ? $"מעלת השיכון k = {k}. חתימת BLS דורשת k > 1. נסה פרמטרים אחרים לעקומה."
+                    : $"Embedding degree k = {k}. BLS signatures require k > 1 (need a non-trivial extension field for the pairing). Try different curve parameters.";
+                throw new InvalidOperationException(msg);
+            }
+
             response.Steps.Add(new CalculationStep
             {
                 StepNumber = 4,
@@ -597,19 +605,18 @@ namespace BLS.WebAPI.Services
                 var cofactor = curve.GroupOrder / curve.R;
                 var result = tempPoint.Multiply(cofactor);
 
-                if (trace != null)
-                {
-                    trace.TrialsUntilSuccess = trialCount;
-                    trace.PointAfterCofactorClearing = new PointDetails
-                    {
-                        X = result.X.ToString(),
-                        Y = result.Y.ToString(),
-                        IsInfinity = result.IsInfinity
-                    };
-                }
-
                 if (!result.IsInfinity)
                 {
+                    if (trace != null)
+                    {
+                        trace.TrialsUntilSuccess = trialCount;
+                        trace.PointAfterCofactorClearing = new PointDetails
+                        {
+                            X = result.X.ToString(),
+                            Y = result.Y.ToString(),
+                            IsInfinity = false
+                        };
+                    }
                     return result;
                 }
             }

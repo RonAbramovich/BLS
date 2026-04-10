@@ -276,6 +276,12 @@ namespace BLS.WebAPI.Services
 
                 // First, we need to set up extension field and find a torsion point
                 int k = FindEmbeddingDegree(q, r);
+                if (k <= 1)
+                {
+                    throw new InvalidOperationException(lang == "he"
+                        ? $"מעלת השיכון k = {k}. חתימת BLS דורשת k > 1. נסה פרמטרים אחרים לעקומה."
+                        : $"Embedding degree k = {k}. BLS signatures require k > 1 (need a non-trivial extension field for the pairing). Try different curve parameters.");
+                }
                 AddCommonStep(response, lang == "he" ? "מציאת מעלת השיכון" : "Find embedding degree",
                     lang == "he" ?
                     $"k = {k} (הקטן ביותר כך ש- r | q<sup>k</sup> - 1)" :
@@ -377,27 +383,27 @@ namespace BLS.WebAPI.Services
         private IECPoint<PrimeFieldElement> FindGenerator(EllipticCurve<PrimeFieldElement> curve, PrimeField field, BigInteger r)
         {
             var q = field.Characteristic;
+            var cofactor = curve.GroupOrder / r;
 
             for (BigInteger x = 0; x < q && x < 1000; x++)
             {
                 var xElem = field.FromInt(x);
                 var rhs = xElem.Power(3) + curve.A * xElem + curve.B;
+                var rhsInt = rhs.Value;
 
-                if (!rhs.IsZero)
+                var y = NumberTheoryUtils.SqrtModP(rhsInt, q);
+                if (y == -1) continue;
+
+                var yElem = field.FromInt(y);
+                var point = curve.CreatePoint(xElem, yElem);
+
+                var candidate = ScalarMultiply(point, cofactor);
+                if (!candidate.IsInfinity)
                 {
-                    for (BigInteger y = 0; y < q; y++)
+                    var check = ScalarMultiply(candidate, r);
+                    if (check.IsInfinity)
                     {
-                        var yElem = field.FromInt(y);
-                        if ((yElem * yElem).Equals(rhs))
-                        {
-                            var point = curve.CreatePoint(xElem, yElem);
-                            var rP = ScalarMultiply(point, r);
-                            if (rP.IsInfinity)
-                            {
-                                return point;
-                            }
-                            break;
-                        }
+                        return candidate;
                     }
                 }
             }
@@ -445,7 +451,9 @@ namespace BLS.WebAPI.Services
             {
                 if (p1.Y.Equals(p2.Y))
                 {
-                    // Point doubling
+                    // Point doubling — vertical tangent when y = 0 (2-torsion point)
+                    if (p1.Y.IsZero) return curve.Infinity;
+
                     var three = field.FromInt(3);
                     var two = field.FromInt(2);
                     var slope = (three * p1.X * p1.X + curve.A) / (two * p1.Y);
