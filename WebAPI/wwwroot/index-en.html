@@ -29,11 +29,36 @@
       <!-- Curve header with animated SVG + KaTeX -->
       <div class="curve-header">
         <div class="curve-svg-container">
-          <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-            <path d="M 5,30 C 5,18 12,8 24,6 C 38,4 54,14 54,30 C 54,46 38,56 24,54 C 12,52 5,42 5,30" fill="none" stroke="#6366f1" stroke-width="2" class="curve-line"/>
-            <circle r="3" fill="#818cf8">
-              <animateMotion dur="4s" repeatCount="indefinite" path="M 5,30 C 5,18 12,8 24,6 C 38,4 54,14 54,30 C 54,46 38,56 24,54 C 12,52 5,42 5,30"/>
-            </circle>
+          <svg viewBox="0 0 300 280" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5"
+                      markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9" fill="none" stroke="#475569" stroke-width="1.2"/>
+              </marker>
+            </defs>
+            <!-- Axes -->
+            <line x1="15" y1="140" x2="285" y2="140" stroke="#475569" stroke-width="0.75" marker-end="url(#arrowhead)"/>
+            <line x1="42" y1="270" x2="42" y2="10" stroke="#475569" stroke-width="0.75" marker-end="url(#arrowhead)"/>
+            <!-- Elliptic curve – upper half -->
+            <path d="M 55,140 C 55,75 75,40 95,40 C 115,40 125,78 135,78 C 155,78 215,15 255,5"
+                  fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" class="curve-line"/>
+            <!-- Elliptic curve – lower half -->
+            <path d="M 55,140 C 55,205 75,240 95,240 C 115,240 125,202 135,202 C 155,202 215,265 255,275"
+                  fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" class="curve-line-lower"/>
+            <!-- Secant line through P, Q, −R -->
+            <line x1="30" y1="73" x2="240" y2="36" stroke="#818cf8" stroke-width="1.2" class="secant-line"/>
+            <!-- Reflection line −R ↔ R -->
+            <line x1="188" y1="45" x2="188" y2="235" stroke="#818cf8" stroke-width="1" stroke-dasharray="5,4" class="reflect-line"/>
+            <!-- Points -->
+            <circle cx="68" cy="66" r="4.5" fill="#818cf8" class="ec-point"/>
+            <circle cx="119" cy="58" r="4.5" fill="#818cf8" class="ec-point"/>
+            <circle cx="188" cy="45" r="4.5" fill="#818cf8" class="ec-point"/>
+            <circle cx="188" cy="235" r="4.5" fill="#818cf8" class="ec-point"/>
+            <!-- Labels -->
+            <text x="52" y="72" fill="#818cf8" font-family="Inter, sans-serif" font-size="14" font-weight="600" class="ec-label">P</text>
+            <text x="107" y="50" fill="#818cf8" font-family="Inter, sans-serif" font-size="14" font-weight="600" class="ec-label">Q</text>
+            <text x="196" y="41" fill="#818cf8" font-family="Inter, sans-serif" font-size="14" font-weight="600" class="ec-label">−R</text>
+            <text x="196" y="252" fill="#818cf8" font-family="Inter, sans-serif" font-size="14" font-weight="600" class="ec-label">R = P+Q</text>
           </svg>
         </div>
         <div class="math-block" data-katex="y^2 = x^3 + Ax + B \pmod{q}"></div>

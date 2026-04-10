@@ -116,9 +116,11 @@ body {
 /* --- Curve header block ------------------------------------------------- */
 .curve-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
+  text-align: center;
   gap: 16px;
-  padding: 16px;
+  padding: 24px 16px;
   background: var(--accent-bg);
   border: 1px solid var(--border-accent);
   border-radius: var(--radius-lg);
@@ -151,18 +153,50 @@ body {
 }
 
 .curve-svg-container svg {
-  width: 60px;
-  height: 60px;
+  width: 500px;
+  max-width: 100%;
+  height: auto;
 }
 
 .curve-line {
+  stroke-dasharray: 800;
+  stroke-dashoffset: 800;
+  animation: draw-curve 2.5s ease forwards;
+}
+
+.curve-line-lower {
+  stroke-dasharray: 800;
+  stroke-dashoffset: 800;
+  animation: draw-curve 2.5s ease 0.3s forwards;
+}
+
+.secant-line {
   stroke-dasharray: 300;
   stroke-dashoffset: 300;
-  animation: draw-curve 3s ease forwards;
+  animation: draw-curve 0.8s ease 2.8s forwards;
+}
+
+.reflect-line {
+  opacity: 0;
+  animation: ec-appear 0.5s ease 3.5s forwards;
+}
+
+.ec-point {
+  opacity: 0;
+  animation: ec-appear 0.4s ease 3.8s forwards;
+}
+
+.ec-label {
+  opacity: 0;
+  animation: ec-appear 0.4s ease 4s forwards;
 }
 
 @keyframes draw-curve {
   to { stroke-dashoffset: 0; }
+}
+
+@keyframes ec-appear {
+  to { opacity: 1; }
 }
 
 /* --- Section card ------------------------------------------------------- */
@@ -675,6 +709,6 @@ body {
   .app-header h1 { font-size: 1.35rem; }
   .section-card { padding: 16px; }
   .form-row { flex-direction: column; gap: 0; }
-  .curve-header { flex-direction: column; text-align: center; }
+  .curve-svg-container svg { width: 340px; }
   .nav-pills { gap: 6px; }
 }
