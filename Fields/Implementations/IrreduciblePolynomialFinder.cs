@@ -7,30 +7,32 @@ namespace BLS.Fields.Implementations
 {
     /// <summary>
     /// Finds an irreducible polynomial g(x) in F_p[x] of degree k where k is the embedding degree of r wrt p.
+    /// Uses random sampling instead of brute-force enumeration: ~1/k of all monic degree-k
+    /// polynomials are irreducible, so we expect to find one in O(k) random tries regardless
+    /// of field size. Irreducibility is verified via Rabin's test (see PolynomialUtils).
     /// </summary>
     public static class IrreduciblePolynomialFinder
     {
+        private const int MaxRandomAttempts = 10_000;
+
         public static Polynomial FindIrreduciblePolynomial(PrimeField field, BigInteger order, int maxDegreeSearch = 50)
         {
             ValidateFieldAndOrder(field, order);
             BigInteger characteristic = field.Characteristic;
             int degree = FindEmbeddingDegree(order, maxDegreeSearch, characteristic);
-            int maxAttempts = ValidateMaxAttemptsRange(characteristic, degree);
-            var distinctPrimeFactors = NumberTheoryUtils.GetPrimeDivisors(degree);
-            var characteristicToDegree = BigInteger.Pow(characteristic, degree);
-            var x = Polynomial.X(characteristic);
+            var random = new Random(Guid.NewGuid().GetHashCode());
 
-            for (int candidateValue = 0; candidateValue < maxAttempts; candidateValue++)
+            for (int attempt = 0; attempt < MaxRandomAttempts; attempt++)
             {
+                // Build a random monic polynomial of the required degree:
+                // free coefficients c_0..c_{k-1} are random in [0, p), leading coeff is 1.
                 var coefficients = new BigInteger[degree + 1];
-                BigInteger remainder = candidateValue;
                 for (int i = 0; i < degree; i++)
                 {
-                    coefficients[i] = remainder % characteristic;
-                    remainder /= characteristic;
+                    coefficients[i] = NumberTheoryUtils.RandomBigInteger(random, characteristic);
                 }
+                coefficients[degree] = 1;
 
-                coefficients[degree] = 1; // Ensure monic polynomial
                 var candidatePoly = new Polynomial(characteristic, coefficients);
 
                 if (PolynomialUtils.IsIrreducible(candidatePoly, field))
@@ -39,20 +41,8 @@ namespace BLS.Fields.Implementations
                 }
             }
 
-            throw new InvalidOperationException(message: $"No irreducible polynomial of degree {degree} found over F_{characteristic}.");
-        }
-
-        private static int ValidateMaxAttemptsRange(BigInteger characteristic, int degree)
-        {
-            // Enumeration limit check
-            BigInteger totalCandidates = BigInteger.Pow(characteristic, degree);
-            if (totalCandidates > new BigInteger(int.MaxValue))
-            {
-                throw new InvalidOperationException($"Search space too large: p^d = {totalCandidates}");
-            }
-
-            var maxAttempts = (int)totalCandidates;
-            return maxAttempts;
+            throw new InvalidOperationException(
+                $"No irreducible polynomial of degree {degree} found over F_{characteristic} after {MaxRandomAttempts} random attempts.");
         }
 
         private static void ValidateFieldAndOrder(PrimeField field, BigInteger order)

@@ -479,7 +479,7 @@ namespace BLS.WebAPI.Services
             var p = field.Characteristic;
             var cofactor = curve.GroupOrder / r;
 
-            for (BigInteger x = 0; x < p && x < 100; x++)
+            for (BigInteger x = 0; x < p; x++)
             {
                 var xElem = field.FromInt(x);
                 var rhs = xElem.Power(3).Add(curve.A.Multiply(xElem)).Add(curve.B);
