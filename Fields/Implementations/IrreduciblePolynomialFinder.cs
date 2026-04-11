@@ -56,9 +56,9 @@ namespace BLS.Fields.Implementations
 
         private static int FindEmbeddingDegree(BigInteger r, int maxDegreeSearch, BigInteger p)
         {
-            // find embedding degree k: smallest k>=1 s.t. r | (p^k - 1)
+            // find embedding degree k: smallest k>=2 s.t. r | (p^k - 1)
             int k = -1;
-            for (int cand = 1; cand <= maxDegreeSearch; cand++)
+            for (int cand = 2; cand <= maxDegreeSearch; cand++)
             {
                 var p_pow_k = BigInteger.Pow(p, cand);
                 if ((p_pow_k - 1) % r == 0)

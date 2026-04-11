@@ -23,13 +23,13 @@ namespace BLS.Fields.Implementations
                 throw new ArgumentException("q must be at least 2 (should be prime)", nameof(q));
             }
 
-            if (maxK < 1)
+            if (maxK < 2)
             {
-                throw new ArgumentException("maxK must be at least 1", nameof(maxK));
+                throw new ArgumentException("maxK must be at least 2", nameof(maxK));
             }
 
-            // Search for smallest k where r | (q^k - 1)
-            for (int k = 1; k <= maxK; k++)
+            // Search for smallest k >= 2 where r | (q^k - 1)
+            for (int k = 2; k <= maxK; k++)
             {
                 BigInteger qk_minus_1 = BigInteger.Pow(q, k) - 1;
                 

@@ -509,7 +509,7 @@ namespace BLS.WebAPI.Services
 
         private int FindEmbeddingDegree(BigInteger q, BigInteger r)
         {
-            for (int k = 1; k <= 100; k++)
+            for (int k = 2; k <= 100; k++)
             {
                 var qk_minus_1 = BigInteger.Pow(q, k) - 1;
                 if (qk_minus_1 % r == 0)
