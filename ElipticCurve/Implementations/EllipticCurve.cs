@@ -44,7 +44,6 @@ namespace BLS.ElipticCurve.Implementations
                     _groupOrder = ComputeGroupOrderForExtensionField();
                 }
 
-                _factors = Factor(_groupOrder.Value);
                 return _groupOrder.Value;
             }
         }
@@ -151,13 +150,12 @@ namespace BLS.ElipticCurve.Implementations
         {
             get
             {
-                // Ensure GroupOrder computed (and factors cached)
                 if (_factors != null)
                 {
                     return _factors;
                 }
-                _ = GroupOrder;
-                return _factors ?? new List<(BigInteger, int)>();
+                _factors = Factor(GroupOrder);
+                return _factors;
             }
         }
 
