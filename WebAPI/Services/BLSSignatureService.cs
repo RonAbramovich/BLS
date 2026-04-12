@@ -414,6 +414,18 @@ namespace BLS.WebAPI.Services
                 var groupOrder = baseCurve.GroupOrder;
                 var r = baseCurve.R;
 
+                // Compute embedding degree k early to reject unsuitable curves
+                var k = EmbeddingDegreeCalculator.FindEmbeddingDegree(r, q);
+                if (k <= 1)
+                {
+                    response.Success = false;
+                    response.ErrorMessage = lang == "he"
+                        ? $"מעלת השיכון k = {k}. חתימת BLS דורשת k > 1 (שדה הרחבה לא טריוויאלי). נסה פרמטרים אחרים לעקומה."
+                        : $"Embedding degree k = {k}. BLS signatures require k > 1 (need a non-trivial extension field for the pairing). Try different curve parameters.";
+                    return response;
+                }
+                response.EmbeddingDegree = k;
+
                 // Find a generator point for display
                 var generator = FindGenerator(baseCurve, r);
 

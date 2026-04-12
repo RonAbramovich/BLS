@@ -42,6 +42,18 @@ namespace BLS.WebAPI.Services
                 var groupOrder = baseCurve.GroupOrder;
                 var r = baseCurve.R;
 
+                // Compute embedding degree k early to reject unsuitable curves
+                var k = EmbeddingDegreeCalculator.FindEmbeddingDegree(r, q);
+                if (k <= 1)
+                {
+                    response.Success = false;
+                    response.ErrorMessage = lang == "he"
+                        ? $"מעלת השיכון k = {k}. חתימת BLS דורשת k > 1 (שדה הרחבה לא טריוויאלי). נסה פרמטרים אחרים לעקומה."
+                        : $"Embedding degree k = {k}. BLS signatures require k > 1 (need a non-trivial extension field for the pairing). Try different curve parameters.";
+                    return response;
+                }
+                response.EmbeddingDegree = k;
+
                 // Find generator point
                 var generator = FindGenerator(baseCurve, baseField, r);
 
@@ -509,7 +521,7 @@ namespace BLS.WebAPI.Services
 
         private int FindEmbeddingDegree(BigInteger q, BigInteger r)
         {
-            for (int k = 2; k <= 100; k++)
+            for (int k = 1; k <= 100; k++)
             {
                 var qk_minus_1 = BigInteger.Pow(q, k) - 1;
                 if (qk_minus_1 % r == 0)
