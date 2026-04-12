@@ -14,8 +14,9 @@ namespace BLS.ElipticCurve.Implementations
     {
         /// <summary>
         /// Finds a point Q ∈ E[r] over F_{q^k} that is linearly independent from P.
-        /// Algorithm: Q = π(S) - S, where S = (N_k/r²)*T for random T, and π is Frobenius endomorphism.
-        /// MODIFIED: Using cofactor = N_k/r² instead of N_k/r for better success probability.
+        /// Algorithm: Q = π(S) - S, where S = cofactor*T for random T, and π is Frobenius endomorphism.
+        /// The cofactor is N_k with all factors of r removed, ensuring it is coprime to r
+        /// so that multiplication preserves the non-rational eigenspace of Frobenius.
         /// </summary>
         /// <param name="curve">Elliptic curve over extension field F_{q^k}</param>
         /// <param name="r">Prime order (the largest prime divisor of the base field curve's group order)</param>
@@ -50,13 +51,17 @@ namespace BLS.ElipticCurve.Implementations
                 throw new ArgumentException($"Order r={r} does not divide the curve group order N_k={N_k}", nameof(r));
             }
 
-            // Use N_k/r² instead of N_k/r for better probability of finding non-infinity points !! 
-            BigInteger cofactor = N_k / (r * r);
+            // Strip all factors of r from N_k so the cofactor is coprime to r.
+            // This preserves the full r-primary part (including the non-rational eigenspace)
+            // when computing S = cofactor * T.
+            BigInteger cofactor = N_k;
+            while (cofactor % r == 0)
+                cofactor /= r;
             var random = new Random(Guid.NewGuid().GetHashCode());
 
             for (int attempt = 0; attempt < maxAttempts; attempt++)
             {
-                // Step 4: Choose a random point T \in E(F_{q^k}) and compute S = (N_k/r^2)*T
+                // Choose a random point T ∈ E(F_{q^k}) and project onto the r-primary part
                 var T = GenerateRandomPoint(curve, extensionField, random, maxAttempts: 1000);
                 var S = T.Multiply(cofactor);
 
@@ -69,7 +74,20 @@ namespace BLS.ElipticCurve.Implementations
                 var piS = ApplyFrobeniusEndomorphism(S, q, extensionField);
                 var Q = piS.Add(S.Negate());
 
-                // Verify Q ≠ O (which would mean S \in E(F_q), i.e., S is rational)
+                if (Q.IsInfinity)
+                {
+                    continue;
+                }
+
+                // Reduce Q into E[r]: since cofactor is coprime to r, Q lives in E[r^e].
+                // Repeatedly multiply by r until r*Q = O.
+                var rQ = Q.Multiply(r);
+                while (!rQ.IsInfinity)
+                {
+                    Q = rQ;
+                    rQ = Q.Multiply(r);
+                }
+
                 if (!Q.IsInfinity)
                 {
                     return Q;

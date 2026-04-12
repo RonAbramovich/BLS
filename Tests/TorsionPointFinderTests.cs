@@ -65,6 +65,47 @@ namespace BLS.Tests
         }
 
         [Fact]
+        public void FindIndependentTorsionPoint_q7919_a233_b234_RCubedDividesNk()
+        {
+            // Regression: N_k = 2^11 * 11^3 * 23, so r^3 | N_k.
+            // The old cofactor N_k/r^2 still contained a factor of r,
+            // killing the non-rational Frobenius eigenspace and making every attempt fail.
+            BigInteger q = 7919;
+            var baseField = new PrimeField(q);
+            var baseCurve = new EllipticCurve<PrimeFieldElement>(
+                baseField,
+                baseField.FromInt(233),
+                baseField.FromInt(234)
+            );
+
+            BigInteger r = baseCurve.R;
+            Assert.Equal(new BigInteger(11), r);
+
+            int k = EmbeddingDegreeCalculator.FindEmbeddingDegree(r, q);
+            Assert.Equal(2, k);
+
+            var irreduciblePoly = IrreduciblePolynomialFinder.FindIrreduciblePolynomial(baseField, r, k);
+            var extensionField = new ExtensionField(baseField, irreduciblePoly);
+            var extensionCurve = new EllipticCurve<ExtensionFieldElement>(
+                extensionField,
+                extensionField.FromInt(233),
+                extensionField.FromInt(234)
+            );
+
+            BigInteger N_k = extensionCurve.GroupOrder;
+            Assert.True(N_k % (r * r * r) == 0, "r^3 must divide N_k for this regression test");
+
+            var Q = TorsionPointFinder.FindIndependentTorsionPoint(extensionCurve, r);
+
+            Assert.False(Q.IsInfinity);
+            Assert.True(extensionCurve.IsOnCurve(Q));
+            Assert.True(Q.Multiply(r).IsInfinity, "Q must have order dividing r");
+
+            bool isRational = (Q.X.Poly.Degree <= 0 && Q.Y.Poly.Degree <= 0);
+            Assert.False(isRational, "Q must be irrational (not in base field)");
+        }
+
+        [Fact]
         public void FindIndependentTorsionPoint_ThrowsWhen_R_DoesNotDivide_ExtensionCurveOrder()
         {
             var baseField = new PrimeField(new BigInteger(5));
