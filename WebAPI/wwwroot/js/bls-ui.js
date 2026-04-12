@@ -7,9 +7,9 @@ function blsApp(lang) {
 
   return {
     /* --- curve params --- */
-    q: '43',
-    a: '1',
-    b: '8',
+    q: '7919',
+    a: '15',
+    b: '42',
 
     /* --- private key --- */
     keyMode: 'select',
