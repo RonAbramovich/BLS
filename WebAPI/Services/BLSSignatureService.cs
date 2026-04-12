@@ -189,6 +189,14 @@ namespace BLS.WebAPI.Services
         {
             var k = EmbeddingDegreeCalculator.FindEmbeddingDegree(r, q);
 
+            if (k <= 1)
+            {
+                var msg = lang == "he"
+                    ? $"מעלת השיכון k = {k}. חתימת BLS דורשת k > 1. נסה פרמטרים אחרים לעקומה."
+                    : $"Embedding degree k = {k}. BLS signatures require k > 1 (need a non-trivial extension field for the pairing). Try different curve parameters.";
+                throw new InvalidOperationException(msg);
+            }
+
             response.Steps.Add(new CalculationStep
             {
                 StepNumber = 4,
@@ -406,6 +414,18 @@ namespace BLS.WebAPI.Services
                 var groupOrder = baseCurve.GroupOrder;
                 var r = baseCurve.R;
 
+                // Compute embedding degree k early to reject unsuitable curves
+                var k = EmbeddingDegreeCalculator.FindEmbeddingDegree(r, q);
+                if (k <= 1)
+                {
+                    response.Success = false;
+                    response.ErrorMessage = lang == "he"
+                        ? $"מעלת השיכון k = {k}. חתימת BLS דורשת k > 1 (שדה הרחבה לא טריוויאלי). נסה פרמטרים אחרים לעקומה."
+                        : $"Embedding degree k = {k}. BLS signatures require k > 1 (need a non-trivial extension field for the pairing). Try different curve parameters.";
+                    return response;
+                }
+                response.EmbeddingDegree = k;
+
                 // Find a generator point for display
                 var generator = FindGenerator(baseCurve, r);
 
@@ -471,7 +491,7 @@ namespace BLS.WebAPI.Services
             var p = field.Characteristic;
             var cofactor = curve.GroupOrder / r;
 
-            for (BigInteger x = 0; x < p && x < 100; x++)
+            for (BigInteger x = 0; x < p; x++)
             {
                 var xElem = field.FromInt(x);
                 var rhs = xElem.Power(3).Add(curve.A.Multiply(xElem)).Add(curve.B);
@@ -597,19 +617,18 @@ namespace BLS.WebAPI.Services
                 var cofactor = curve.GroupOrder / curve.R;
                 var result = tempPoint.Multiply(cofactor);
 
-                if (trace != null)
-                {
-                    trace.TrialsUntilSuccess = trialCount;
-                    trace.PointAfterCofactorClearing = new PointDetails
-                    {
-                        X = result.X.ToString(),
-                        Y = result.Y.ToString(),
-                        IsInfinity = result.IsInfinity
-                    };
-                }
-
                 if (!result.IsInfinity)
                 {
+                    if (trace != null)
+                    {
+                        trace.TrialsUntilSuccess = trialCount;
+                        trace.PointAfterCofactorClearing = new PointDetails
+                        {
+                            X = result.X.ToString(),
+                            Y = result.Y.ToString(),
+                            IsInfinity = false
+                        };
+                    }
                     return result;
                 }
             }

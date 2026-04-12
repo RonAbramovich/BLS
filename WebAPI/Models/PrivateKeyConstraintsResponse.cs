@@ -9,6 +9,7 @@ namespace BLS.WebAPI.Models
         public string GroupOrder { get; set; } = string.Empty;
         public string R { get; set; } = string.Empty;
         public string GeneratorPoint { get; set; } = string.Empty;
+        public int EmbeddingDegree { get; set; }
         public List<string> ValidKeyExamples { get; set; } = new();
         public List<string> InvalidKeyExamples { get; set; } = new();
         public string ValidationRule { get; set; } = string.Empty;
