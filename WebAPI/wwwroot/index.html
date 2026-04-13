@@ -310,8 +310,8 @@
               <div class="detail-item success-bg">
                 <div class="detail-label">✅ נקודת פיתול סופית Q:</div>
                 <div class="detail-value">
-                  X (מעלה <span x-text="result.detailedReport.torsionPointDetails.pointX_Degree"></span>): <span x-text="result.detailedReport.torsionPointDetails.finalPointX_Polynomial"></span><br>
-                  Y (מעלה <span x-text="result.detailedReport.torsionPointDetails.pointY_Degree"></span>): <span x-text="result.detailedReport.torsionPointDetails.finalPointY_Polynomial"></span>
+                  X (מעלה <span x-text="result.detailedReport.torsionPointDetails.pointX_Degree"></span>): <span x-html="result.detailedReport.torsionPointDetails.finalPointX_Polynomial"></span><br>
+                  Y (מעלה <span x-text="result.detailedReport.torsionPointDetails.pointY_Degree"></span>): <span x-html="result.detailedReport.torsionPointDetails.finalPointY_Polynomial"></span>
                 </div>
               </div>
             </div>
@@ -336,13 +336,13 @@
               <div class="detail-item">
                 <div class="detail-label">נקודת פיתול Q:</div>
                 <div class="detail-value">
-                  X: <span x-text="result.detailedReport.signatureCalculationDetails.torsionPoint_X"></span><br>
-                  Y: <span x-text="result.detailedReport.signatureCalculationDetails.torsionPoint_Y"></span>
+                  X: <span x-html="result.detailedReport.signatureCalculationDetails.torsionPoint_X"></span><br>
+                  Y: <span x-html="result.detailedReport.signatureCalculationDetails.torsionPoint_Y"></span>
                 </div>
               </div>
               <div class="detail-item success-bg">
                 <div class="detail-label">✅ חתימה = e<sub>r</sub>(a·H(m), Q):</div>
-                <div class="detail-value" x-text="result.detailedReport.signatureCalculationDetails.finalSignature"></div>
+                <div class="detail-value" x-html="result.detailedReport.signatureCalculationDetails.finalSignature"></div>
               </div>
             </div>
           </template>
@@ -362,17 +362,17 @@
               <div class="detail-item">
                 <div class="detail-label">נקודת פיתול Q:</div>
                 <div class="detail-value">
-                  X: <span x-text="result.detailedReport.verificationCalculationDetails.torsionPoint_X"></span><br>
-                  Y: <span x-text="result.detailedReport.verificationCalculationDetails.torsionPoint_Y"></span>
+                  X: <span x-html="result.detailedReport.verificationCalculationDetails.torsionPoint_X"></span><br>
+                  Y: <span x-html="result.detailedReport.verificationCalculationDetails.torsionPoint_Y"></span>
                 </div>
               </div>
               <div class="detail-item">
                 <div class="detail-label">כפל סקלרי a·Q:</div>
-                <div class="detail-value">(<span x-text="result.detailedReport.verificationCalculationDetails.multipliedPoint_X"></span>, <span x-text="result.detailedReport.verificationCalculationDetails.multipliedPoint_Y"></span>)</div>
+                <div class="detail-value">(<span x-html="result.detailedReport.verificationCalculationDetails.multipliedPoint_X"></span>, <span x-html="result.detailedReport.verificationCalculationDetails.multipliedPoint_Y"></span>)</div>
               </div>
               <div class="detail-item success-bg">
                 <div class="detail-label">✅ אימות = e<sub>r</sub>(H(m), a·Q):</div>
-                <div class="detail-value" x-text="result.detailedReport.verificationCalculationDetails.finalVerification"></div>
+                <div class="detail-value" x-html="result.detailedReport.verificationCalculationDetails.finalVerification"></div>
               </div>
               <div class="detail-item" :class="result.detailedReport.verificationCalculationDetails.signatureMatches ? 'success-bg' : 'error-bg'">
                 <div class="detail-label">התאמת חתימה:</div>
@@ -388,11 +388,11 @@
             <h3>סיכום חתימה</h3>
             <div class="detail-item">
               <div class="detail-label">חתימת אליס:</div>
-              <div class="detail-value" x-text="result?.aliceSignature"></div>
+              <div class="detail-value" x-html="result?.aliceSignature"></div>
             </div>
             <div class="detail-item">
               <div class="detail-label">אימות של בוב:</div>
-              <div class="detail-value" x-text="result?.bobVerification"></div>
+              <div class="detail-value" x-html="result?.bobVerification"></div>
             </div>
             <div class="detail-item" :class="result?.verificationPassed ? 'success-bg' : 'error-bg'">
               <div class="detail-label">מצב אימות:</div>

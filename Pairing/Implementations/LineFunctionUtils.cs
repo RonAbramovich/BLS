@@ -1,5 +1,4 @@
 using System;
-using System.Data;
 using System.Numerics;
 using BLS.ElipticCurve.Interfaces;
 using BLS.ElipticCurve.Utilities;

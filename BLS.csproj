@@ -13,11 +13,6 @@
     <!-- Exclude WebAPI files -->
     <Compile Remove="WebAPI\**\*.cs" />
     <None Remove="WebAPI\**\*" />
-    <!-- Exclude ConsoleApp files -->
-    <Compile Remove="ConsoleApp\**\*.cs" />
-    <None Remove="ConsoleApp\**\*" />
-    <!-- Exclude the root Program.cs as this is now a library -->
-    <Compile Remove="Program.cs" />
   </ItemGroup>
 
 </Project>

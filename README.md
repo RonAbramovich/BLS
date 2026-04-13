@@ -1,7 +1,12 @@
 ﻿# BLS Digital Signature Implementation
+Ron Abramovich & Eyal Chai Ezra
+
+**Repository:** [github.com/RonAbramovich/BLS](https://github.com/RonAbramovich/BLS)
 
 This project implements a **complete BLS cryptographic signature scheme** with full pairing-based cryptography support.
 BLS signatures are a form of digital signature that supports signature aggregation, making them useful for blockchain applications, distributed systems, and zero-knowledge proofs.
+
+**Tech Stack:** C# / .NET 10 | xUnit | ASP.NET Core Web API
 
 **Status: Complete implementation with verified bilinear pairings**
 
@@ -27,8 +32,6 @@ The BLS signature scheme is built on elliptic curve cryptography and **bilinear 
 - Attribute-Based Encryption (ABE)
 
 ---
-
-## Project Structure
 
 ## Project Structure
 
@@ -106,7 +109,7 @@ The project defines clean abstractions for algebraic structures:
 - Final exponentiation for bilinearity
 - Verified properties:
   - Bilinearity: e(aP, Q) = e(P, Q)^a
-  - Bilinearity: e(P, bQ) = e(P, Q)^b  
+  - Bilinearity: e(P, bQ) = e(P, Q)^b
   - Non-degeneracy: e(P, Q) != 0
   - Subgroup: e(P, Q)^r = 1
 
@@ -144,8 +147,6 @@ The project defines clean abstractions for algebraic structures:
 - Cofactor clearing for r-torsion subgroup
 
 ---
-
-## BLS Signature Algorithm
 
 ## BLS Signature Algorithm
 
@@ -206,7 +207,7 @@ e(P, Q) = MillerAlgorithm(P, Q, r) ^ ((p^k - 1) / r)
 - Hash-to-point mapping
 - Torsion point finding
 - Line function evaluations
-- Miller's algorithm  
+- Miller's algorithm
 - Complete Tate pairing with bilinearity verification
 
 **Integration Tests:**
@@ -216,32 +217,6 @@ e(P, Q) = MillerAlgorithm(P, Q, r) ^ ((p^k - 1) / r)
 - Multiple embedding degrees and field sizes
 
 ---
-
-## Extension Field Design Decision
-
-When implementing the extension field F_p[x]/(g(x)) where g(x) is irreducible over F_p of degree k, there were two possible approaches:
-
-### Option A: Polynomial Representation (Chosen)
-Elements are represented as polynomials (coefficient vectors) in the quotient ring F_p[x]/(g(x)). Operations include:
-- Addition and subtraction: component-wise modulo p
-- Multiplication: polynomial multiplication followed by reduction modulo g(x)
-- Division: compute multiplicative inverse using the Extended Euclidean Algorithm on polynomials
-
-**Advantages:**
-- Direct and mathematically natural representation
-- Standard algorithms for all operations
-- Straightforward implementation of field arithmetic
-
-**Disadvantages:**
-- Requires careful implementation of polynomial arithmetic and reduction modulo the irreducible polynomial
-
-### Option B: Matrix Representation (Not Chosen)
-This approach embeds the multiplicative group of F_p^k into GL_k(F_p) (k×k matrices over F_p):
-- Start with the root α = π(x) where π: F_p[x] → F_p[x]/(g(x))
-- Build basis {1, α, α^2, ..., α^(k-1)} which generates the extension field as a vector space
-- Find a generator g of the multiplicative group
-- Represent each element using the generator basis {1, g, g^2, ..., g^(k-1)}
-- Perform multiplication via matrix exponentiation
 
 ## Extension Field Design Decision
 
@@ -286,11 +261,12 @@ This approach embeds the multiplicative group of F_p^k into GL_k(F_p) (k x k mat
 
 ## Project Components Summary
 
-- **Fields Package** (Fields/): Prime fields, extension fields, and polynomial utilities
+- **Fields Package** (Fields/): Prime fields, extension fields, polynomial utilities, and embedding degree calculation
 - **Elliptic Curve Package** (ElipticCurve/): Curve and point implementations with group operations
 - **Pairing Package** (Pairing/): Miller's algorithm, line functions, and Tate pairing
-- **Hash-to-Point**: Deterministic message-to-point mapping
-- **Tests**: Comprehensive unit tests for all components
+- **Hash-to-Point** (ElipticCurve/Implementations/HashToPoint.cs): Deterministic message-to-point mapping
+- **Web API** (WebAPI/): ASP.NET Core API with interactive frontend for BLS signature demos
+- **Tests** (Tests/): Comprehensive xUnit test suite for all components
 
 ---
 
@@ -304,8 +280,10 @@ Detailed algorithm documentation is available in the docs/ directory:
 4. **Hash-to-Point** (docs/04_hash_to_point.md): Deterministic message-to-point mapping with increment-and-try and cofactor clearing
 5. **Factorization** (docs/05_factorization.md): Trial division, prime factorization, and point order computation
 6. **Test Suite** (docs/06_test_suite.md): Complete test coverage with detailed calculations and expected results
-7. **Pairings** (docs/07_pairings.md): Miller's algorithm, final exponentiation, and bilinear pairings
-8. **Pairing Tests** (docs/08_pairing_tests.md): Comprehensive pairing test documentation
+7. **Extension Field Group Order** (docs/06_extension_group_order.md): Computing group order via Frobenius trace recurrence
+8. **Torsion Points** (docs/07_torsion_point.md): Finding an independent torsion point for pairing computation
+9. **Tate Pairing** (docs/08_tate_pairing.md): Miller's algorithm, final exponentiation, and bilinear pairings
+10. **Reference Calculations** (docs/elliptic_curve_calculations.md): Worked elliptic curve examples
 
 Each document includes:
 
@@ -313,6 +291,34 @@ Each document includes:
 - Step-by-step examples with complete calculations
 - Implementation references to the codebase
 - Time complexity analysis where relevant
+
+---
+
+## Web API & Interactive UI
+
+The project includes an ASP.NET Core Web API (WebAPI/) with a browser-based frontend for interactive BLS signature demonstrations:
+
+- **Single Signature** — Enter curve parameters (p, A, B), a private key, and a message to walk through the full BLS signing and verification pipeline step by step
+- **Aggregated Signatures** — Multiple participants each sign the same message; the system aggregates signatures and verifies the result with a single pairing check
+- **Bilingual UI** — Available in both Hebrew and English
+- **Swagger** — API documentation at `/swagger` for programmatic access
+
+---
+
+## Getting Started
+
+**Prerequisites:** [.NET 10 SDK](https://dotnet.microsoft.com/download)
+
+```bash
+# Build the library
+dotnet build
+
+# Run the test suite
+dotnet test
+
+# Launch the Web API (serves UI at https://localhost:5001)
+dotnet run --project WebAPI
+```
 
 ---
 

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Text;
-using System.Xml.Linq;
+﻿using System.Numerics;
 
 namespace BLS.Fields.Interfaces
 {
@@ -15,6 +11,5 @@ namespace BLS.Fields.Interfaces
         TElement Zero { get; }
         TElement One { get; }
         TElement FromInt(BigInteger value);
-        bool IsValid(TElement x);
     }
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using System.Linq;
 using BLS.Fields.Interfaces;
 
 namespace BLS.Fields.Implementations
@@ -49,13 +48,6 @@ namespace BLS.Fields.Implementations
         public ExtensionFieldElement FromInt(BigInteger value)
         {
             return new ExtensionFieldElement(this, new Polynomial(Characteristic, NumberTheoryUtils.ModNormalize(value, Characteristic)));
-        }
-
-        public bool IsValid(ExtensionFieldElement x)
-        {
-            // Require only that the element is non-null and its underlying polynomial
-            // coefficients are over the same prime characteristic as this field.
-            return x != null && x.Poly.Modulus == Characteristic;
         }
 
         public BigInteger MultiplicativeGroupOrder => BigInteger.Pow(Characteristic, ExtensionDegree) - 1;

@@ -42,7 +42,7 @@ namespace BLS.Fields.Implementations
 
         public static Polynomial X(BigInteger p)
         {
-            return new Polynomial(p, 0, 1); // (0,1) corresponds to the polynomial f(x)=x 
+            return new Polynomial(p, 0, 1); // (0,1) corresponds to the polynomial f(x)=x
         }
 
         public Polynomial Clone()
@@ -79,7 +79,7 @@ namespace BLS.Fields.Implementations
             var res = new BigInteger[max + 1];
             for (int i = 0; i <= max; i++)
             {
-                res[i] = (a[i] - b[i]) % p;    
+                res[i] = (a[i] - b[i]) % p;
                 if (res[i] < 0)
                 {
                     res[i] += p;
@@ -119,7 +119,7 @@ namespace BLS.Fields.Implementations
         }
 
         /// <summary>
-        /// Polynomial division with remainder: Ron TODO : Improve.
+        /// Polynomial division with remainder.
         /// </summary>
         public static (Polynomial Quotient, Polynomial Remainder) DivRem(Polynomial a, Polynomial b)
         {
@@ -164,7 +164,7 @@ namespace BLS.Fields.Implementations
             return DivRem(a, modulus).Remainder;
         }
 
-        // Fast exponentiation mod a polynomial: Ron TODO : Improve.
+        // Fast exponentiation mod a polynomial.
         public static Polynomial PowMod(Polynomial value, BigInteger exponent, Polynomial mod)
         {
             if (value.Modulus != mod.Modulus) throw new ArgumentException("Modulus mismatch");

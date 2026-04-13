@@ -169,6 +169,8 @@ namespace BLS.Fields.Implementations
 
         public override string ToString() => Poly.ToString();
 
+        public string ToHtmlString() => Poly.ToHtmlString();
+
         private void EnsureSameField(ExtensionFieldElement other)
         {
             ArgumentNullException.ThrowIfNull(other);
