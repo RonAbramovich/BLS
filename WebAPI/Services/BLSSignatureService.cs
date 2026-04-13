@@ -73,8 +73,8 @@ namespace BLS.WebAPI.Services
                 var bobVerification = ExecuteStep9(P, Q, r, privateKey, baseCurve, extensionField, lang, response);
 
                 // Final verification
-                response.AliceSignature = aliceSignature.ToString();
-                response.BobVerification = bobVerification.ToString();
+                response.AliceSignature = aliceSignature.ToHtmlString();
+                response.BobVerification = bobVerification.ToHtmlString();
                 response.VerificationPassed = aliceSignature.Equals(bobVerification);
 
                 // Update signature match status in detailed report
@@ -277,8 +277,8 @@ namespace BLS.WebAPI.Services
                 {
                     TargetOrder = r.ToString(),
                     ExtensionFieldSize = $"{extensionCurve.Field.Characteristic}<sup>{extensionCurve.Field.ExtensionDegree}</sup>",
-                    FinalPointX_Polynomial = Q.X.ToString(),
-                    FinalPointY_Polynomial = Q.Y.ToString(),
+                    FinalPointX_Polynomial = Q.X.ToHtmlString(),
+                    FinalPointY_Polynomial = Q.Y.ToHtmlString(),
                     PointX_Degree = Q.X.Poly.Degree,
                     PointY_Degree = Q.Y.Poly.Degree,
                     CofactorMultiplier = (extensionCurve.GroupOrder / r).ToString(),
@@ -291,11 +291,11 @@ namespace BLS.WebAPI.Services
                 StepNumber = 7,
                 Description = StepDescriptions.GetDescription(7, lang),
                 TechnicalDescription = $"Found Q in E[r] linearly independent from base field",
-                Result = $"Q = ({Q.X}, {Q.Y})",
+                Result = $"Q = ({Q.X.ToHtmlString()}, {Q.Y.ToHtmlString()})",
                 Details = new()
                 {
-                    ["Point_X"] = Q.X.ToString(),
-                    ["Point_Y"] = Q.Y.ToString(),
+                    ["Point_X"] = Q.X.ToHtmlString(),
+                    ["Point_Y"] = Q.Y.ToHtmlString(),
                     ["Point_X_Degree"] = Q.X.Poly.Degree.ToString(),
                     ["Point_Y_Degree"] = Q.Y.Poly.Degree.ToString(),
                     ["IsIrrational"] = (Q.X.Poly.Degree > 0 || Q.Y.Poly.Degree > 0).ToString()
@@ -322,11 +322,11 @@ namespace BLS.WebAPI.Services
                     PrivateKey = privateKey.ToString(),
                     MessageHashPoint_X = P.X.ToString(),
                     MessageHashPoint_Y = P.Y.ToString(),
-                    TorsionPoint_X = Q.X.ToString(),
-                    TorsionPoint_Y = Q.Y.ToString(),
+                    TorsionPoint_X = Q.X.ToHtmlString(),
+                    TorsionPoint_Y = Q.Y.ToHtmlString(),
                     MultipliedPoint_X = aP.X.ToString(),
                     MultipliedPoint_Y = aP.Y.ToString(),
-                    FinalSignature = signature.ToString()
+                    FinalSignature = signature.ToHtmlString()
                 };
             }
 
@@ -335,7 +335,7 @@ namespace BLS.WebAPI.Services
                 StepNumber = 8,
                 Description = StepDescriptions.GetDescription(8, lang),
                 TechnicalDescription = $"Alice signature: e_r({privateKey}*H(m), Q)",
-                Result = $"e<sub>r</sub>(a·H(m), Q) = {signature}",
+                Result = $"e<sub>r</sub>(a·H(m), Q) = {signature.ToHtmlString()}",
                 Details = new()
                 {
                     ["aP_X"] = aP.X.ToString(),
@@ -364,11 +364,11 @@ namespace BLS.WebAPI.Services
                     PrivateKey = privateKey.ToString(),
                     MessageHashPoint_X = P.X.ToString(),
                     MessageHashPoint_Y = P.Y.ToString(),
-                    TorsionPoint_X = Q.X.ToString(),
-                    TorsionPoint_Y = Q.Y.ToString(),
-                    MultipliedPoint_X = aQ.X.ToString(),
-                    MultipliedPoint_Y = aQ.Y.ToString(),
-                    FinalVerification = verification.ToString(),
+                    TorsionPoint_X = Q.X.ToHtmlString(),
+                    TorsionPoint_Y = Q.Y.ToHtmlString(),
+                    MultipliedPoint_X = aQ.X.ToHtmlString(),
+                    MultipliedPoint_Y = aQ.Y.ToHtmlString(),
+                    FinalVerification = verification.ToHtmlString(),
                     SignatureMatches = false // Will be updated in ExecuteSignature
                 };
             }
@@ -378,7 +378,7 @@ namespace BLS.WebAPI.Services
                 StepNumber = 9,
                 Description = StepDescriptions.GetDescription(9, lang),
                 TechnicalDescription = $"Bob verification: e_r(H(m), {privateKey}*Q)",
-                Result = $"e<sub>r</sub>(H(m), a·Q) = {verification}",
+                Result = $"e<sub>r</sub>(H(m), a·Q) = {verification.ToHtmlString()}",
                 Details = new()
                 {
                     ["Verification"] = verification.ToString()

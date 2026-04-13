@@ -336,8 +336,8 @@ namespace BLS.WebAPI.Services
                             $"σ<sub>agg</sub> = Σ σ<sub>i</sub> = {response.AggregatedSignature}" :
                             $"σ<sub>agg</sub> = Σ σ<sub>i</sub> = {response.AggregatedSignature}",
                         VerificationPoint = lang == "he" ?
-                            $"e(σ<sub>agg</sub>, Q) = {pairingAggSig}\ne(H(m), Q)<sup>(Σ sk<sub>i</sub>)</sup> = {pairingExpected}" :
-                            $"e(σ<sub>agg</sub>, Q) = {pairingAggSig}\ne(H(m), Q)<sup>(Σ sk<sub>i</sub>)</sup> = {pairingExpected}",
+                            $"e(σ<sub>agg</sub>, Q) = {pairingAggSig.ToHtmlString()}\ne(H(m), Q)<sup>(Σ sk<sub>i</sub>)</sup> = {pairingExpected.ToHtmlString()}" :
+                            $"e(σ<sub>agg</sub>, Q) = {pairingAggSig.ToHtmlString()}\ne(H(m), Q)<sup>(Σ sk<sub>i</sub>)</sup> = {pairingExpected.ToHtmlString()}",
                         PairingCheck = response.VerificationPassed
                     };
                 }
@@ -345,12 +345,12 @@ namespace BLS.WebAPI.Services
                 AddCommonStep(response, lang == "he" ? "אימות באמצעות זיווג ביליניארי" : "Verify using bilinear pairing",
                     lang == "he" ?
                     $"בדיקה: e(σ<sub>agg</sub>, Q) = e(H(m), Q)<sup>(Σ sk<sub>i</sub>)</sup>\n" +
-                    $"e(σ<sub>agg</sub>, Q) = {pairingAggSig.ToString().Substring(0, Math.Min(50, pairingAggSig.ToString().Length))}...\n" +
-                    $"e(H(m), Q)<sup>(Σsk)</sup> = {pairingExpected.ToString().Substring(0, Math.Min(50, pairingExpected.ToString().Length))}...\n" +
+                    $"e(σ<sub>agg</sub>, Q) = {pairingAggSig.ToHtmlString().Substring(0, Math.Min(50, pairingAggSig.ToHtmlString().Length))}...\n" +
+                    $"e(H(m), Q)<sup>(Σsk)</sup> = {pairingExpected.ToHtmlString().Substring(0, Math.Min(50, pairingExpected.ToHtmlString().Length))}...\n" +
                     $"תוצאה: {(response.VerificationPassed ? "✓ הזיווגים תואמים - אימות הצליח!" : "✗ הזיווגים שונים")}" :
                     $"Check: e(σ<sub>agg</sub>, Q) = e(H(m), Q)<sup>(Σ sk<sub>i</sub>)</sup>\n" +
-                    $"e(σ<sub>agg</sub>, Q) = {pairingAggSig.ToString().Substring(0, Math.Min(50, pairingAggSig.ToString().Length))}...\n" +
-                    $"e(H(m), Q)<sup>(Σsk)</sup> = {pairingExpected.ToString().Substring(0, Math.Min(50, pairingExpected.ToString().Length))}...\n" +
+                    $"e(σ<sub>agg</sub>, Q) = {pairingAggSig.ToHtmlString().Substring(0, Math.Min(50, pairingAggSig.ToHtmlString().Length))}...\n" +
+                    $"e(H(m), Q)<sup>(Σsk)</sup> = {pairingExpected.ToHtmlString().Substring(0, Math.Min(50, pairingExpected.ToHtmlString().Length))}...\n" +
                     $"Result: {(response.VerificationPassed ? "✓ Pairings match - Verification passed!" : "✗ Pairings differ")}");
 
             }

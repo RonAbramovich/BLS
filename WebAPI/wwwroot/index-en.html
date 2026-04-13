@@ -309,8 +309,8 @@
               <div class="detail-item success-bg">
                 <div class="detail-label">✅ Final Torsion Point Q:</div>
                 <div class="detail-value">
-                  X (degree <span x-text="result.detailedReport.torsionPointDetails.pointX_Degree"></span>): <span x-text="result.detailedReport.torsionPointDetails.finalPointX_Polynomial"></span><br>
-                  Y (degree <span x-text="result.detailedReport.torsionPointDetails.pointY_Degree"></span>): <span x-text="result.detailedReport.torsionPointDetails.finalPointY_Polynomial"></span>
+                  X (degree <span x-text="result.detailedReport.torsionPointDetails.pointX_Degree"></span>): <span x-html="result.detailedReport.torsionPointDetails.finalPointX_Polynomial"></span><br>
+                  Y (degree <span x-text="result.detailedReport.torsionPointDetails.pointY_Degree"></span>): <span x-html="result.detailedReport.torsionPointDetails.finalPointY_Polynomial"></span>
                 </div>
               </div>
             </div>
@@ -335,13 +335,13 @@
               <div class="detail-item">
                 <div class="detail-label">Torsion Point Q:</div>
                 <div class="detail-value">
-                  X: <span x-text="result.detailedReport.signatureCalculationDetails.torsionPoint_X"></span><br>
-                  Y: <span x-text="result.detailedReport.signatureCalculationDetails.torsionPoint_Y"></span>
+                  X: <span x-html="result.detailedReport.signatureCalculationDetails.torsionPoint_X"></span><br>
+                  Y: <span x-html="result.detailedReport.signatureCalculationDetails.torsionPoint_Y"></span>
                 </div>
               </div>
               <div class="detail-item success-bg">
                 <div class="detail-label">✅ Signature = e<sub>r</sub>(a·H(m), Q):</div>
-                <div class="detail-value" x-text="result.detailedReport.signatureCalculationDetails.finalSignature"></div>
+                <div class="detail-value" x-html="result.detailedReport.signatureCalculationDetails.finalSignature"></div>
               </div>
             </div>
           </template>
@@ -361,17 +361,17 @@
               <div class="detail-item">
                 <div class="detail-label">Torsion Point Q:</div>
                 <div class="detail-value">
-                  X: <span x-text="result.detailedReport.verificationCalculationDetails.torsionPoint_X"></span><br>
-                  Y: <span x-text="result.detailedReport.verificationCalculationDetails.torsionPoint_Y"></span>
+                  X: <span x-html="result.detailedReport.verificationCalculationDetails.torsionPoint_X"></span><br>
+                  Y: <span x-html="result.detailedReport.verificationCalculationDetails.torsionPoint_Y"></span>
                 </div>
               </div>
               <div class="detail-item">
                 <div class="detail-label">Scalar Multiplication a·Q:</div>
-                <div class="detail-value">(<span x-text="result.detailedReport.verificationCalculationDetails.multipliedPoint_X"></span>, <span x-text="result.detailedReport.verificationCalculationDetails.multipliedPoint_Y"></span>)</div>
+                <div class="detail-value">(<span x-html="result.detailedReport.verificationCalculationDetails.multipliedPoint_X"></span>, <span x-html="result.detailedReport.verificationCalculationDetails.multipliedPoint_Y"></span>)</div>
               </div>
               <div class="detail-item success-bg">
                 <div class="detail-label">✅ Verification = e<sub>r</sub>(H(m), a·Q):</div>
-                <div class="detail-value" x-text="result.detailedReport.verificationCalculationDetails.finalVerification"></div>
+                <div class="detail-value" x-html="result.detailedReport.verificationCalculationDetails.finalVerification"></div>
               </div>
               <div class="detail-item" :class="result.detailedReport.verificationCalculationDetails.signatureMatches ? 'success-bg' : 'error-bg'">
                 <div class="detail-label">Signature Match:</div>
@@ -387,11 +387,11 @@
             <h3>Signature Summary</h3>
             <div class="detail-item">
               <div class="detail-label">Alice's Signature:</div>
-              <div class="detail-value" x-text="result?.aliceSignature"></div>
+              <div class="detail-value" x-html="result?.aliceSignature"></div>
             </div>
             <div class="detail-item">
               <div class="detail-label">Bob's Verification:</div>
-              <div class="detail-value" x-text="result?.bobVerification"></div>
+              <div class="detail-value" x-html="result?.bobVerification"></div>
             </div>
             <div class="detail-item" :class="result?.verificationPassed ? 'success-bg' : 'error-bg'">
               <div class="detail-label">Verification Status:</div>
