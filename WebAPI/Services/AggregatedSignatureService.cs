@@ -35,6 +35,17 @@ namespace BLS.WebAPI.Services
                 var groupOrder = baseCurve.GroupOrder;
                 var r = baseCurve.R;
 
+                var k = EmbeddingDegreeCalculator.FindEmbeddingDegree(r, q);
+                if (k <= 1)
+                {
+                    response.Success = false;
+                    response.ErrorMessage = lang == "he"
+                        ? $"מעלת השיכון k = {k}. חתימת BLS דורשת k > 1."
+                        : $"Embedding degree k = {k}. BLS signatures require k > 1.";
+                    return response;
+                }
+                response.EmbeddingDegree = k;
+
                 // Find generator point
                 var generator = FindGenerator(baseCurve, baseField, r);
 

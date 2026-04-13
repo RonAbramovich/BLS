@@ -43,7 +43,7 @@ function blsApp(lang) {
       this.result = null;
 
       try {
-        const res = await fetch('/api/aggregated/private-key-constraints', {
+        const res = await fetch('/api/bls/validate-parameters', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
