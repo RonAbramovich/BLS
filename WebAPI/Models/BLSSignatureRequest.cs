@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Numerics;
 using System.Text.Json.Serialization;
 
 namespace BLS.WebAPI.Models

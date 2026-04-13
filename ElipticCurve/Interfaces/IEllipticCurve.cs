@@ -1,9 +1,7 @@
-﻿using BLS.Fields.Interfaces;
-using System;
+using BLS.Fields.Interfaces;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Numerics;
-using System.Text;
 
 namespace BLS.ElipticCurve.Interfaces
 {

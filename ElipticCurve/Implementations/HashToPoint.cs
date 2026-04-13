@@ -28,9 +28,9 @@ namespace BLS.ElipticCurve.Implementations
             BigInteger bInt = curve.B.Value;
 
             // Try and increment x until we find a quadratic residue for z = x^3 + a*x + b
-            for (BigInteger increametCandidate = 0; increametCandidate < p; increametCandidate++)
+            for (BigInteger incrementCandidate = 0; incrementCandidate < p; incrementCandidate++)
             {
-                var xi = (x0 + increametCandidate) % p;
+                var xi = (x0 + incrementCandidate) % p;
                 // compute z = xi^3 + a*xi + b (mod p)
                 var zInt = (BigInteger.Pow(xi, 3) + aInt * xi + bInt) % p;
                 if (zInt < 0)
@@ -53,7 +53,7 @@ namespace BLS.ElipticCurve.Implementations
                 var hashedPointFromMessage = ClearCofactor(curve, Ptemp);
                 if (hashedPointFromMessage.IsInfinity)
                 {
-                    continue; // Validation, should not happen. 
+                    continue; // Validation, should not happen.
                 }
 
                 return hashedPointFromMessage;

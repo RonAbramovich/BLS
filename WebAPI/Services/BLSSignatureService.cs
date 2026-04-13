@@ -142,7 +142,7 @@ namespace BLS.WebAPI.Services
         }
 
         private IECPoint<PrimeFieldElement> ExecuteStep3(
-            string message, EllipticCurve<PrimeFieldElement> baseCurve, 
+            string message, EllipticCurve<PrimeFieldElement> baseCurve,
             PrimeField baseField, string lang, BLSSignatureResponse response)
         {
             // Initialize Step3 details if detailed report is requested

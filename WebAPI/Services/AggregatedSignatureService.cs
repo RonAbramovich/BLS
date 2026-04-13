@@ -5,7 +5,6 @@ using System.Numerics;
 using BLS.ElipticCurve.Implementations;
 using BLS.ElipticCurve.Interfaces;
 using BLS.Fields.Implementations;
-using BLS.Fields.Interfaces;
 using BLS.Pairing.Implementations;
 using BLS.WebAPI.Models;
 
@@ -16,12 +15,6 @@ namespace BLS.WebAPI.Services
     /// </summary>
     public class AggregatedSignatureService
     {
-        private readonly BLSSignatureService _blsService;
-
-        public AggregatedSignatureService()
-        {
-            _blsService = new BLSSignatureService();
-        }
 
         public PrivateKeyConstraintsResponse GetPrivateKeyConstraints(PrivateKeyConstraintsRequest request)
         {
@@ -42,26 +35,12 @@ namespace BLS.WebAPI.Services
                 var groupOrder = baseCurve.GroupOrder;
                 var r = baseCurve.R;
 
-                // Compute embedding degree k early to reject unsuitable curves
-                var k = EmbeddingDegreeCalculator.FindEmbeddingDegree(r, q);
-                if (k <= 1)
-                {
-                    response.Success = false;
-                    response.ErrorMessage = lang == "he"
-                        ? $"מעלת השיכון k = {k}. חתימת BLS דורשת k > 1 (שדה הרחבה לא טריוויאלי). נסה פרמטרים אחרים לעקומה."
-                        : $"Embedding degree k = {k}. BLS signatures require k > 1 (need a non-trivial extension field for the pairing). Try different curve parameters.";
-                    return response;
-                }
-                response.EmbeddingDegree = k;
-
                 // Find generator point
                 var generator = FindGenerator(baseCurve, baseField, r);
 
                 // Populate response with curve information
                 response.Prime = q.ToString();
-                response.CurveEquation = lang == "he" 
-                    ? $"y² ≡ x³ + {a_param}x + {b_param} (mod {q})"
-                    : $"y² ≡ x³ + {a_param}x + {b_param} (mod {q})";
+                response.CurveEquation = $"y² ≡ x³ + {a_param}x + {b_param} (mod {q})";
                 response.GroupOrder = groupOrder.ToString();
                 response.R = r.ToString();
                 response.GeneratorPoint = $"G = ({generator.X.Value}, {generator.Y.Value})";
@@ -142,7 +121,7 @@ namespace BLS.WebAPI.Services
                 var r = baseCurve.R;
 
                 AddCommonStep(response, lang == "he" ? "יצירת עקומה אליפטית" : "Create elliptic curve",
-                    lang == "he" ? 
+                    lang == "he" ?
                     $"q = {q}\ny² = x³ + {a_param}x + {b_param}\nסדר קבוצה: {groupOrder}\nr = {r}" :
                     $"q = {q}\ny² = x³ + {a_param}x + {b_param}\nGroup order: {groupOrder}\nr = {r}");
 
@@ -198,7 +177,7 @@ namespace BLS.WebAPI.Services
                     if (sk <= 0)
                     {
                         throw new ArgumentException(
-                            lang == "he" 
+                            lang == "he"
                                 ? $"מפתח פרטי לא תקין עבור {participant.Name}: {sk}. המפתח חייב להיות חיובי"
                                 : $"Invalid private key for {participant.Name}: {sk}. Private key must be positive");
                     }
@@ -206,7 +185,7 @@ namespace BLS.WebAPI.Services
                     if (sk % r == 0)
                     {
                         throw new ArgumentException(
-                            lang == "he" 
+                            lang == "he"
                                 ? $"מפתח פרטי לא תקין עבור {participant.Name}: {sk}. המפתח לא יכול להיות כפולה של r={r}\n" +
                                   $"(מכיוון ש- {sk} mod {r} = 0, החישוב {sk} × G יביא לנקודת אינסוף)"
                                 : $"Invalid private key for {participant.Name}: {sk}. Private key cannot be a multiple of r={r}\n" +
@@ -287,13 +266,8 @@ namespace BLS.WebAPI.Services
                 // Or by bilinearity: e(σ_agg, Q) = e(H(m), Q)^(sum of sk_i)
 
                 // First, we need to set up extension field and find a torsion point
-                int k = FindEmbeddingDegree(q, r);
-                if (k <= 1)
-                {
-                    throw new InvalidOperationException(lang == "he"
-                        ? $"מעלת השיכון k = {k}. חתימת BLS דורשת k > 1. נסה פרמטרים אחרים לעקומה."
-                        : $"Embedding degree k = {k}. BLS signatures require k > 1 (need a non-trivial extension field for the pairing). Try different curve parameters.");
-                }
+                int k = EmbeddingDegreeCalculator.FindEmbeddingDegree(r, q);
+                if (k < 0) throw new InvalidOperationException("Could not find embedding degree k <= 100");
                 AddCommonStep(response, lang == "he" ? "מציאת מעלת השיכון" : "Find embedding degree",
                     lang == "he" ?
                     $"k = {k} (הקטן ביותר כך ש- r | q<sup>k</sup> - 1)" :
@@ -336,20 +310,6 @@ namespace BLS.WebAPI.Services
                 var pairingExpected = pairingBase.Power(sumSK);
 
                 response.VerificationPassed = pairingAggSig.Equals(pairingExpected);
-
-                // Alternative verification: demonstrate that each individual signature can be verified
-                // and that the aggregation property holds: ∏ e(H(m), pk_i) = e(H(m), Σ pk_i)
-                var productOfIndividualPairings = extensionField.One;
-                foreach (var pk in publicKeys)
-                {
-                    var pkQ = Q.Multiply(1); // We can't directly multiply Q by a base field point
-                    // Instead we use: e(H(m), pk_i × Q) by computing it differently
-                    // Actually, for each pk_i = sk_i × G, we want e(H(m), sk_i × Q)
-                    // But we can compute this as e(H(m), Q)^sk_i
-                    // Then product = ∏ e(H(m), Q)^sk_i = e(H(m), Q)^(Σ sk_i)
-                    // Which is exactly what we computed above
-                }
-                // The product verification is implicit in our computation above
 
                 if (request.IncludeDetailedReport && response.AggregationDetails != null)
                 {
@@ -395,27 +355,27 @@ namespace BLS.WebAPI.Services
         private IECPoint<PrimeFieldElement> FindGenerator(EllipticCurve<PrimeFieldElement> curve, PrimeField field, BigInteger r)
         {
             var q = field.Characteristic;
-            var cofactor = curve.GroupOrder / r;
 
-            for (BigInteger x = 0; x < q; x++)
+            for (BigInteger x = 0; x < q && x < 1000; x++)
             {
                 var xElem = field.FromInt(x);
                 var rhs = xElem.Power(3) + curve.A * xElem + curve.B;
-                var rhsInt = rhs.Value;
 
-                var y = NumberTheoryUtils.SqrtModP(rhsInt, q);
-                if (y == -1) continue;
-
-                var yElem = field.FromInt(y);
-                var point = curve.CreatePoint(xElem, yElem);
-
-                var candidate = ScalarMultiply(point, cofactor);
-                if (!candidate.IsInfinity)
+                if (!rhs.IsZero)
                 {
-                    var check = ScalarMultiply(candidate, r);
-                    if (check.IsInfinity)
+                    for (BigInteger y = 0; y < q; y++)
                     {
-                        return candidate;
+                        var yElem = field.FromInt(y);
+                        if ((yElem * yElem).Equals(rhs))
+                        {
+                            var point = curve.CreatePoint(xElem, yElem);
+                            var rP = ScalarMultiply(point, r);
+                            if (rP.IsInfinity)
+                            {
+                                return point;
+                            }
+                            break;
+                        }
                     }
                 }
             }
@@ -463,9 +423,7 @@ namespace BLS.WebAPI.Services
             {
                 if (p1.Y.Equals(p2.Y))
                 {
-                    // Point doubling — vertical tangent when y = 0 (2-torsion point)
-                    if (p1.Y.IsZero) return curve.Infinity;
-
+                    // Point doubling
                     var three = field.FromInt(3);
                     var two = field.FromInt(2);
                     var slope = (three * p1.X * p1.X + curve.A) / (two * p1.Y);
@@ -499,37 +457,6 @@ namespace BLS.WebAPI.Services
                 Description = description,
                 Result = result
             });
-        }
-
-        private IECPoint<ExtensionFieldElement> LiftPointToExtension(
-            IECPoint<PrimeFieldElement> point,
-            EllipticCurve<ExtensionFieldElement> targetCurve,
-            ExtensionField extField)
-        {
-            if (point.IsInfinity) return targetCurve.Infinity;
-
-            // Convert PrimeFieldElement to ExtensionFieldElement
-            // ExtensionFieldElement is represented as a polynomial over the base field
-            var xPoly = new Polynomial(extField.BaseField.Characteristic, point.X.Value);
-            var yPoly = new Polynomial(extField.BaseField.Characteristic, point.Y.Value);
-
-            var xExt = new ExtensionFieldElement(extField, xPoly);
-            var yExt = new ExtensionFieldElement(extField, yPoly);
-
-            return targetCurve.CreatePoint(xExt, yExt);
-        }
-
-        private int FindEmbeddingDegree(BigInteger q, BigInteger r)
-        {
-            for (int k = 1; k <= 100; k++)
-            {
-                var qk_minus_1 = BigInteger.Pow(q, k) - 1;
-                if (qk_minus_1 % r == 0)
-                {
-                    return k;
-                }
-            }
-            throw new InvalidOperationException("Could not find embedding degree k <= 100");
         }
 
         private List<BigInteger> GetInvalidKeyExamples(BigInteger r, int count)
